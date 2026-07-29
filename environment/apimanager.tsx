@@ -1,8 +1,9 @@
 // const baseUri = "http://10.0.2.2:8000/";
-const baseUri = "http://192.168.29.53:8000/";
+const baseUri = "http://10.224.117.206:8000/";
 
 const base = "admin/";
 const paymentBase = "payment/";
+const feedbackBase = "feedback/";
 
 export const Auth = {
     login : `${baseUri}${base}auth/login`
@@ -23,4 +24,9 @@ export const createPaymentApi = `${baseUri}${paymentBase}/create-trip-payment`;
 export const getTripPaymentApi = `${baseUri}${paymentBase}/trip-payments?tripTypeId=`;
 export const UpdateTripPaymentApi = `${baseUri}${paymentBase}/trip-payment/`;
 
-export const ReferralAmount = `${baseUri}${base}settings/referral-reward`;
+export const AppsettingsApi = `${baseUri}${base}settings`;
+export const PackageApi = `${baseUri}${base}packages`;
+export const GearTypeApis = `${baseUri}${base}gear-types`;
+
+export const FeedbackApis = `${baseUri}${feedbackBase}tags`;
+

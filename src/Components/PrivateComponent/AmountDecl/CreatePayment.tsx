@@ -110,7 +110,7 @@ const CreatePayment = () => {
                 handleTripTypes(token);
             }
         } catch (error) {
-            console.error("Error fetching user data from AsyncStorage:", error);
+            showError(error);
         }
     }
 

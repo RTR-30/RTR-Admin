@@ -35,8 +35,20 @@ const Dashboard = () => {
         navigation.navigate("AmountDeclearation")
     }
 
-    const goToReferalAmount = () => {
-        navigation.navigate("ReferralAmount")
+    const goToAppSettings = () => {
+        navigation.navigate("AppSettings")
+    }
+
+    const goToPackageManagement = () => {
+        navigation.navigate("PackageManagement")
+    }
+
+    const goToFeedback = () => {
+        navigation.navigate("Feedback")
+    }
+
+    const goToGearType = () => {
+        navigation.navigate("GearType")
     }
 
     return (
@@ -46,7 +58,7 @@ const Dashboard = () => {
             </View>
 
             <View style={{ flex: 9, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                <View style={{ flexDirection: 'row', width: '100%', height: '10%', justifyContent: 'space-around', borderWidth:"0.5px" }}>
+                <View style={{ flexDirection: 'row', width: '100%', height: '10%', justifyContent: 'space-around', borderWidth: "0.5px" }}>
                     <View style={{ width: '45%', backgroundColor: '#fff', shadowColor: '#000', borderRadius: 10, elevation: 4 }}>
                         <TouchableOpacity onPress={goToCarOwner} style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
                             <Ionicons name="car" color={"black"} size={30} />
@@ -88,11 +100,38 @@ const Dashboard = () => {
 
 
                     <View style={{ width: '45%', backgroundColor: '#fff', shadowColor: '#000', borderRadius: 10, elevation: 4 }}>
-                        <TouchableOpacity onPress={goToReferalAmount} style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                            <Ionicons name="people-circle-outline" color={"black"} size={30} />
-                            <Text style={{ color: '#000', fontSize: 14, fontWeight: '800', textAlign: 'center' }}>Referral Amount</Text>
+                        <TouchableOpacity onPress={goToAppSettings} style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                            <Ionicons name="settings" color={"black"} size={30} />
+                            <Text style={{ color: '#000', fontSize: 14, fontWeight: '800', textAlign: 'center' }}>App Settings</Text>
                         </TouchableOpacity>
                     </View>
+                </View>
+
+                <View style={{ flexDirection: 'row', width: '100%', height: '10%', justifyContent: 'space-around', marginTop: '10%' }}>
+                    <View style={{ width: '45%', backgroundColor: '#fff', shadowColor: '#000', borderRadius: 10, elevation: 4 }}>
+                        <TouchableOpacity onPress={goToPackageManagement} style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                            <Ionicons name="file-tray-full" color={"black"} size={30} />
+                            <Text style={{ color: '#000', fontSize: 14, fontWeight: '800', textAlign: 'center' }}>Package Management</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={{ width: '45%', backgroundColor: '#fff', shadowColor: '#000', borderRadius: 10, elevation: 4 }}>
+                        <TouchableOpacity onPress={goToGearType} style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                            <Ionicons name="cog" color={"black"} size={30} />
+                            <Text style={{ color: '#000', fontSize: 14, fontWeight: '800', textAlign: 'center' }}>Gear Type</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                <View style={{ flexDirection: 'row', width: '100%', height: '10%', justifyContent: 'space-around', marginTop: '10%' }}>
+                    <View style={{ width: '45%', backgroundColor: '#fff', shadowColor: '#000', borderRadius: 10, elevation: 4 }}>
+                        <TouchableOpacity onPress={goToFeedback} style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                            <Ionicons name="chatbox-ellipses" color={"black"} size={30} />
+                            <Text style={{ color: '#000', fontSize: 14, fontWeight: '800', textAlign: 'center' }}>Feedback</Text>
+                        </TouchableOpacity>
+                    </View>
+
+
                 </View>
             </View>
         </View>

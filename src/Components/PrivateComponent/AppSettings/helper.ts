@@ -1,8 +1,8 @@
 import axios from "axios";
-import { ReferralAmount } from "../../../../environment/apimanager";
+import { AppsettingsApi } from "../../../../environment/apimanager";
 
 export const referralAmountService = (token: any) => {
-    return axios.get(`${ReferralAmount}`, {
+    return axios.get(`${AppsettingsApi}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         }
@@ -10,7 +10,7 @@ export const referralAmountService = (token: any) => {
 }
 
 export const updateReferralAmountService = (payload: any, token: any) => {
-    return axios.put(`${ReferralAmount}`, payload, {
+    return axios.put(`${AppsettingsApi}`, payload, {
         headers: {
             Authorization: `Bearer ${token}`,
         }

@@ -14,31 +14,31 @@ const AmountDeclearation = () => {
     const navigation: any = useNavigation();
 
     const gotoTripType = () => {
-        navigation.navigate("TripType")    
+        navigation.navigate("TripType")
     }
 
     const gotoPaymentMode = () => {
         navigation.navigate("PaymentMode")
     }
-    return(
-        <View style={{flex:1}}>
-             <View style={{ flex: 1 }}>
+    return (
+        <View style={{ flex: 1 }}>
+            <View style={{ flex: 1 }}>
                 <Header value={value} />
             </View>
 
-            <View style={{ flex: 9, padding: 10, width:'100%' }}>
-                <View style={{width:'100%', height:100, flexDirection:'row', justifyContent:'space-around'}}>
-                    <View style={{backgroundColor:'#fff', width:'45%', borderRadius:'10%', shadowColor:'black', elevation:3, borderWidth:0.5, borderColor:'black', justifyContent:'center', alignItems:'center'}}>
-                        <TouchableOpacity onPress={gotoTripType} style={{justifyContent:'center', alignItems:'center', height:'100%', width:'100%'}}>
-                            <Ionicons name="list" color={'black'} size={30}/>
-                            <Text style={{textAlign:'center', color:'black', fontSize:14, fontWeight:'bold'}}>Create Trip Type</Text>
+            <View style={{ flex: 9, padding: 10, width: '100%' }}>
+                <View style={{ width: '100%', height: 100, flexDirection: 'row', justifyContent: 'space-around' }}>
+                    <View style={{ backgroundColor: '#fff', width: '45%', borderRadius: '10%', shadowColor: 'black', elevation: 3, borderWidth: 0.5, borderColor: 'black', justifyContent: 'center', alignItems: 'center' }}>
+                        <TouchableOpacity onPress={gotoTripType} style={{ justifyContent: 'center', alignItems: 'center', height: '100%', width: '100%' }}>
+                            <Ionicons name="list" color={'black'} size={30} />
+                            <Text style={{ textAlign: 'center', color: 'black', fontSize: 14, fontWeight: 'bold' }}>Create Trip Type</Text>
                         </TouchableOpacity>
                     </View>
 
-                    <View style={{backgroundColor:'#fff', width:'45%', borderRadius:'10%', shadowColor:'black', elevation:3, borderWidth:0.5, borderColor:'black', justifyContent:'center', alignItems:'center'}}>
-                        <TouchableOpacity onPress={gotoPaymentMode} style={{justifyContent:'center', alignItems:'center', height:'100%', width:'100%'}}>
-                            <FontAwesome name="rupee" color={'black'} size={30}/>
-                            <Text style={{textAlign:'center', color:'black', fontSize:14, fontWeight:'bold'}}>Payment Mode</Text>
+                    <View style={{ backgroundColor: '#fff', width: '45%', borderRadius: '10%', shadowColor: 'black', elevation: 3, borderWidth: 0.5, borderColor: 'black', justifyContent: 'center', alignItems: 'center' }}>
+                        <TouchableOpacity onPress={gotoPaymentMode} style={{ justifyContent: 'center', alignItems: 'center', height: '100%', width: '100%' }}>
+                            <FontAwesome name="rupee" color={'black'} size={30} />
+                            <Text style={{ textAlign: 'center', color: 'black', fontSize: 14, fontWeight: 'bold' }}>Payment Mode</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

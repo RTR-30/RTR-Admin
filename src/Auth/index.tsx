@@ -13,7 +13,17 @@ import PaymentMode from "../Components/PrivateComponent/AmountDecl/PaymentMode";
 import CreatePayment from "../Components/PrivateComponent/AmountDecl/CreatePayment";
 import UpdatePayment from "../Components/PrivateComponent/AmountDecl/UpdatePayment";
 import UpdatePaymentList from "../Components/PrivateComponent/AmountDecl/UpdatePaymentList";
-import ReferralAmount from "../Components/PrivateComponent/ReferralAmount";
+import AppSettings from "../Components/PrivateComponent/AppSettings";
+import PackageManagement from "../Components/PrivateComponent/PackageManagement";
+import PackageList from "../Components/PrivateComponent/PackageManagement/PackageList";
+import CreatePackage from "../Components/PrivateComponent/PackageManagement/CreatePackage";
+import GearType from "../Components/PrivateComponent/GearType";
+import CreateGearType from "../Components/PrivateComponent/GearType/CreateGearType";
+import GearTypeList from "../Components/PrivateComponent/GearType/GearTypeList";
+import Feedback from "../Components/PrivateComponent/Feedbacks";
+import CreateFeedback from "../Components/PrivateComponent/Feedbacks/CreateFeedback";
+import FeedbackList from "../Components/PrivateComponent/Feedbacks/FeedbackList";
+
 const Stack = createNativeStackNavigator();
 
 const NavigationPage = () => {
@@ -34,7 +44,16 @@ const NavigationPage = () => {
                 <Stack.Screen name="CreatePayment" component={CreatePayment}/>
                 <Stack.Screen name="UpdatePayment" component={UpdatePayment}/>
                 <Stack.Screen name="UpdatePaymentList" component={UpdatePaymentList}/>
-                <Stack.Screen name="ReferralAmount" component={ReferralAmount}/>
+                <Stack.Screen name="AppSettings" component={AppSettings}/>
+                <Stack.Screen name="PackageManagement" component={PackageManagement}/>
+                <Stack.Screen name="CreatePackage" component={CreatePackage}/>
+                <Stack.Screen name="PackageList" component={PackageList}/>
+                <Stack.Screen name="GearType" component={GearType}/>
+                <Stack.Screen name="CreateGearType" component={CreateGearType}/>
+                <Stack.Screen name="GearTypeList" component={GearTypeList}/>
+                <Stack.Screen name="Feedback" component={Feedback}/>
+                <Stack.Screen name="CreateFeedback" component={CreateFeedback}/>
+                <Stack.Screen name="FeedbackList" component={FeedbackList}/>
             </Stack.Navigator>
         </NavigationContainer>
     );
