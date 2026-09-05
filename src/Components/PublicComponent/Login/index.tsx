@@ -36,7 +36,6 @@ const Login = () => {
     try {
       const res = await loginService(payload);
       const {status, message, token, admin} = res?.data;
-      console.log(res?.data);
       
       if(status === 200){
         const storedData = {

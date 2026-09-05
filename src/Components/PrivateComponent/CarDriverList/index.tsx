@@ -2,9 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
     View,
     Text,
-    TouchableOpacity,
     ActivityIndicator,
-    ToastAndroid,
     StyleSheet,
     RefreshControl,
     FlatList,
@@ -13,6 +11,7 @@ import {
 import Header from "../../../Common/PageHeader";
 import { totalcardriverUser } from "./helperapi";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { showError } from "../../../Common/ToastMessage";
 
 const TotalCarDriverList = () => {
     const value = "Car Driver";
@@ -39,7 +38,7 @@ const TotalCarDriverList = () => {
             setTotalCount(res?.data?.pagination?.total);
             setDatas(res?.data?.data || []);
         } catch (error) {
-            ToastAndroid.show("error car driver", ToastAndroid.SHORT);
+            showError(error);
         } finally {
             setLoader(false)
             setOnRefreshing(false);
@@ -56,7 +55,7 @@ const TotalCarDriverList = () => {
         setDatas([]);
         handleCarDriver("", currentPageLimit, 1, tokens).then(() => {
         }).catch(() => {
-            ToastAndroid.show("Check Internet Connection", ToastAndroid.SHORT);
+            showError("Check Internet Connection");
         }).finally(() => {
             setLoader(false);
             setOnRefreshing(false);

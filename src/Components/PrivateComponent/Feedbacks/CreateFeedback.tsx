@@ -120,6 +120,7 @@ const CreateFeedback = () => {
                                 height: 45,
                                 marginBottom: 20,
                             }}
+                            placeholderTextColor={"#000"}
                         />
 
                         {/* Target Type */}

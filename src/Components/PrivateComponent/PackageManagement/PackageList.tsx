@@ -6,41 +6,60 @@ import {
     FlatList,
     Modal,
     TextInput,
-    Switch
+    Switch,
+    ScrollView,
+    KeyboardAvoidingView,
+    Platform,
 } from "react-native";
+
 import Header from "../../../Common/PageHeader";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { showError, showSuccess } from "../../../Common/ToastMessage";
-import { DeletePackageService, GetPackageListService, UpdatePackageService } from "./helper";
+import {
+    DeletePackageService,
+    GetPackageListService,
+    UpdatePackageService,
+} from "./helper";
 import { COLORS } from "../../../utils/ColorCode";
 
 const PackageList = () => {
     const value = "Package List";
     const navigation: any = useNavigation();
+
     const [loading, setLoading] = useState(false);
-    const [tokens, setTokens] = useState(null);
+    const [tokens, setTokens] = useState<any>(null);
 
     const [updateShow, setUpdateShow] = useState(false);
     const [packageData, setPackageData] = useState<any[]>([]);
     const [selectedId, setSelectedId] = useState<any>();
+
     const [updateData, setUpdateData] = useState<any>({
         name: "",
-        amount: 0,
-        validity_days: 0,
+        amount: "",
+        validity_days: "",
         description: [""],
-        is_active: false
-    })
+        is_active: false,
+    });
 
+    // ==============================
+    // OPEN UPDATE MODAL
+    // ==============================
     const openUpdateShow = (id: any) => {
-        setSelectedId(id)
-        setUpdateShow(true)
-    }
+        setSelectedId(id);
+        setUpdateShow(true);
+    };
 
+    // ==============================
+    // CLOSE UPDATE MODAL
+    // ==============================
     const closeUpdateShow = () => {
-        setUpdateShow(false)
-    }
+        setUpdateShow(false);
+    };
 
+    // ==============================
+    // VALIDATION
+    // ==============================
     const validatePackage = () => {
         if (!updateData.name.trim()) {
             showError("Package name is required");
@@ -52,14 +71,19 @@ const PackageList = () => {
             return false;
         }
 
-        if (!updateData.validity_days || Number(updateData.validity_days) <= 0) {
+        if (
+            !updateData.validity_days ||
+            Number(updateData.validity_days) <= 0
+        ) {
             showError("Enter valid validity days");
             return false;
         }
 
         if (
             !updateData.description.length ||
-            updateData.description.some((item: string) => item.trim() === "")
+            updateData.description.some(
+                (item: string) => item.trim() === ""
+            )
         ) {
             showError("Please enter all descriptions");
             return false;
@@ -68,61 +92,106 @@ const PackageList = () => {
         return true;
     };
 
+    // ==============================
+    // UPDATE PACKAGE
+    // ==============================
     const UpdatePackageList = async (id: any, token: any) => {
         if (!validatePackage()) return;
 
         setLoading(true);
+
         const payload = {
             name: updateData?.name,
             amount: Number(updateData?.amount),
             validity_days: Number(updateData?.validity_days),
             description: JSON.stringify(updateData?.description),
-            is_active: updateData?.is_active
-        }
+            is_active: updateData?.is_active,
+        };
+
         try {
-            const res = await UpdatePackageService(id, payload, token);
-            const { data: { message = "", success = false } } = res
+            const res = await UpdatePackageService(
+                id,
+                payload,
+                token
+            );
+
+            const {
+                data: {
+                    message = "",
+                    success = false,
+                },
+            } = res;
 
             if (success === true) {
-                showSuccess(message)
-                closeUpdateShow()
-                fetchPackageList(token)
+                showSuccess(message);
+                closeUpdateShow();
+                fetchPackageList(token);
             } else {
-                showError(message)
+                showError(message);
             }
-        } catch (error) {
-            showError(error)
+        } catch (error: any) {
+            showError(error);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
-    const DeletePackageList = async (id: any, usertoken: any) => {
+    // ==============================
+    // DELETE PACKAGE
+    // ==============================
+    const DeletePackageList = async (
+        id: any,
+        usertoken: any
+    ) => {
         setLoading(true);
-        try {
-            const res = await DeletePackageService(id, usertoken)
-            const { data: { message = "", success = false } } = res
-            if (success === true) {
-                showSuccess(message)
-                fetchPackageList(usertoken)
-            } else {
-                showError(message)
-            }
-        } catch (error) {
-            showError(error)
-        } finally {
-            setLoading(false)
-        }
-    }
 
+        try {
+            const res = await DeletePackageService(
+                id,
+                usertoken
+            );
+
+            const {
+                data: {
+                    message = "",
+                    success = false,
+                },
+            } = res;
+
+            if (success === true) {
+                showSuccess(message);
+                fetchPackageList(usertoken);
+            } else {
+                showError(message);
+            }
+        } catch (error: any) {
+            showError(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // ==============================
+    // FETCH PACKAGE LIST
+    // ==============================
     const fetchPackageList = async (usertoken: any) => {
         setLoading(true);
+
         try {
             const res = await GetPackageListService(usertoken);
-            const { data: { data = [], message = "", success = false } } = res
+
+            const {
+                data: {
+                    data = [],
+                    message = "",
+                    success = false,
+                },
+            } = res;
+
             if (success === true) {
                 const formattedData = data.map((item: any) => ({
                     ...item,
+
                     description: (() => {
                         try {
                             return JSON.parse(item.description);
@@ -130,38 +199,53 @@ const PackageList = () => {
                             return [item.description];
                         }
                     })(),
+
                     is_active: item.is_active === 1,
                 }));
 
                 setPackageData(formattedData);
             } else {
-                showError(message)
+                showError(message);
             }
-
-        } catch (error) {
-            showError(error)
+        } catch (error: any) {
+            showError(error);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
+    // ==============================
+    // GET TOKEN
+    // ==============================
     const userStoredData = async () => {
         try {
-            const getDatas: any = await AsyncStorage.getItem("storeData");
+            const getDatas: any =
+                await AsyncStorage.getItem("storeData");
+
+            if (!getDatas) return;
+
             const storeData = JSON.parse(getDatas);
 
-            const token = storeData?.token
+            const token = storeData?.token;
+
             if (token) {
                 setTokens(token);
-                fetchPackageList(token)
+                fetchPackageList(token);
             }
-        } catch (error) {
+        } catch (error: any) {
             showError(error);
         }
-    }
+    };
 
-    const handleDescriptionChange = (text: string, index: number) => {
+    // ==============================
+    // DESCRIPTION CHANGE
+    // ==============================
+    const handleDescriptionChange = (
+        text: string,
+        index: number
+    ) => {
         const updated = [...updateData.description];
+
         updated[index] = text;
 
         setUpdateData({
@@ -170,358 +254,774 @@ const PackageList = () => {
         });
     };
 
+    // ==============================
+    // ADD DESCRIPTION
+    // ==============================
     const addDescription = () => {
         setUpdateData({
             ...updateData,
-            description: [...updateData.description, ""],
+            description: [
+                ...updateData.description,
+                "",
+            ],
         });
     };
 
+    // ==============================
+    // REMOVE DESCRIPTION
+    // ==============================
     const removeDescription = (index: number) => {
-        const updated = updateData.description.filter((_: any, i: any) => i !== index);
+        const updated =
+            updateData.description.filter(
+                (_: any, i: number) => i !== index
+            );
 
         setUpdateData({
             ...updateData,
-            description: updated.length ? updated : [""], // Keep at least one input
+            description:
+                updated.length ? updated : [""],
         });
     };
 
     useEffect(() => {
-        userStoredData()
-    }, [])
+        userStoredData();
+    }, []);
 
     return (
-        <View style={{ flex: 1, backgroundColor: "#F5F5F5" }}>
+        <View
+            style={{
+                flex: 1,
+                backgroundColor: "#F5F5F5",
+            }}
+        >
             <Header value={value} />
 
-            <FlatList
-                data={packageData}
-                keyExtractor={(item: any) => item.id.toString()}
-                contentContainerStyle={{ padding: 15 }}
-                removeClippedSubviews={false}
-                ListEmptyComponent={() => (
-                    <Text
-                        style={{
-                            textAlign: "center",
-                            marginTop: 50,
-                            color: "#888",
-                        }}
-                    >
-                        No Packages Found
-                    </Text>
-                )}
-                renderItem={({ item }) => (
-                    <View
-                        style={{
-                            backgroundColor: "#FFF", padding: 15, borderRadius: 10, marginBottom: 15, elevation: 3,
-                        }}
-                    >
-                        <View style={{ width: '100%', flexDirection: 'row' }}>
-                            <View style={{ width: "20%" }}>
-                                <Text style={{ fontSize: 13, fontWeight: "600", color: COLORS.primary }}>Name</Text>
-                            </View>
-
-                            <View style={{ width: "80%" }}>
-                                <Text style={{ fontSize: 13, fontWeight: "600", color: "#000" }}>{item.name}</Text>
-                            </View>
-                        </View>
-
-                        <View style={{ width: '100%', flexDirection: 'row' }}>
-                            <View style={{ width: "20%" }}>
-                                <Text style={{ fontSize: 13, fontWeight: "600", color: COLORS.primary }}>Amount</Text>
-                            </View>
-
-                            <View style={{ width: "80%" }}>
-                                <Text style={{ fontSize: 13, fontWeight: "700", color: '#000' }}>₹{item.amount}</Text>
-                            </View>
-                        </View>
-
-                        <View style={{ width: '100%', flexDirection: 'row' }}>
-                            <View style={{ width: "20%" }}>
-                                <Text style={{ fontSize: 13, fontWeight: "600", color: COLORS.primary }}>Validity</Text>
-                            </View>
-
-                            <View style={{ width: "80%" }}>
-                                <Text style={{ fontSize: 13, fontWeight: "700", color: '#000' }}>{item.validity_days} Days</Text>
-                            </View>
-                        </View>
-
-                        <View style={{ width: '100%', flexDirection: 'row' }}>
-                            <View style={{ width: "20%" }}>
-                                <Text style={{ fontSize: 13, fontWeight: "600", color: COLORS.primary }}>Description</Text>
-                            </View>
-
-                            <View style={{ width: "80%" }}>
-                                {item.description?.map((desc: string, index: number) => (
-                                    <Text style={{ marginTop: 2, fontSize: 13, fontWeight: "700", color: '#000' }} key={index}>• {desc}</Text>
-                                ))}
-                            </View>
-                        </View>
-
-                        <View style={{ width: '100%', flexDirection: 'row' }}>
-                            <View style={{ width: "20%" }}>
-                                <Text style={{ fontSize: 13, fontWeight: "600", color: COLORS.primary }}>Is Active</Text>
-                            </View>
-
-                            <View style={{ width: "80%" }}>
-                                <Text style={{ color: item.is_active ? "green" : "red" }}>
-                                    {item.is_active ? "Active" : "Inactive"}
-                                </Text>
-                            </View>
-                        </View>
-
-
-                        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 15, width: '100%', height: '20%' }}>
-                            <TouchableOpacity
-                                onPress={()=>openUpdateShow(item?.id)}
-                                style={{
-                                    backgroundColor: "#2196F3",
-                                    borderRadius: 8,
-                                    width: '46%',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    height: '100%'
-                                }}
-                            >
-                                <Text style={{ color: "#FFF", textAlign: 'center', fontWeight: 'bold', fontSize: 15 }}>Update</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                style={{
-                                    backgroundColor: "red",
-                                    borderRadius: 8,
-                                    width: '46%',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    height: '100%'
-                                }}
-                                onPress={() => DeletePackageList(item.id, tokens)}
-                            >
-                                <Text style={{ color: "#FFF", textAlign: 'center', fontWeight: 'bold', fontSize: 15 }}>Delete</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                )}
-            />
-
-            <Modal
-                visible={updateShow}
-                animationType="slide"
-                transparent
-                onRequestClose={closeUpdateShow}
-            >
-                <View
-                    style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: "rgba(0,0,0,0.5)",
-                        justifyContent: "center",
-                        alignItems: "center"
+            {/* ==============================
+                PACKAGE LIST
+            ============================== */}
+            <View style={{ flex: 1 }}>
+                <FlatList
+                    data={packageData}
+                    keyExtractor={(item: any) =>
+                        item.id.toString()
+                    }
+                    contentContainerStyle={{
+                        padding: 15,
+                        paddingBottom: 30,
                     }}
-                >
-                    <View
-                        style={{
-                            width: "90%",
-                            backgroundColor: "white",
-                            padding: 20,
-                            borderRadius: 10
-                        }}
-                    >
-                        <View style={{ width: '100%' }}>
-                            <View style={{ marginTop: 2 }}>
-                                <Text style={{ color: COLORS.primary, fontWeight: 'bold', fontSize: 12 }}>Package Name</Text>
-                                <TextInput
-                                    placeholder="Enter Package Name"
-                                    placeholderTextColor="#999"
-                                    value={updateData.name}
-                                    onChangeText={(text) =>
-                                        setUpdateData({ ...updateData, name: text })
-                                    }
-                                    style={{
-                                        height: 50, borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 12, backgroundColor: "#F9FAFB",
-                                        paddingHorizontal: 15, fontSize: 16, marginBottom: 18, marginTop: 5
-                                    }}
-                                />
-                            </View>
+                    removeClippedSubviews={false}
+                    showsVerticalScrollIndicator={true}
+                    keyboardShouldPersistTaps="handled"
 
-                            <View style={{ marginTop: 2 }}>
-                                <Text style={{ color: COLORS.primary, fontWeight: 'bold', fontSize: 12 }}>Amount</Text>
-                                <TextInput
-                                    placeholder="Enter Amount"
-                                    placeholderTextColor="#999"
-                                    value={updateData.amount}
-                                    onChangeText={(text) =>
-                                        setUpdateData({ ...updateData, amount: text })
-                                    }
-                                    keyboardType="numeric"
-                                    style={{
-                                        height: 50, borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 12, backgroundColor: "#F9FAFB",
-                                        paddingHorizontal: 15, fontSize: 16, marginBottom: 18, marginTop: 5
-                                    }}
-                                />
-                            </View>
+                    ListEmptyComponent={() => (
+                        <Text
+                            style={{
+                                textAlign: "center",
+                                marginTop: 50,
+                                color: "#888",
+                            }}
+                        >
+                            No Packages Found
+                        </Text>
+                    )}
 
-                            <View style={{ marginTop: 2 }}>
-                                <Text style={{ color: COLORS.primary, fontWeight: 'bold', fontSize: 12 }}>Validity Days</Text>
-                                <TextInput
-                                    placeholder="Enter Validity Days"
-                                    placeholderTextColor="#999"
-                                    value={updateData.validity_days}
-                                    onChangeText={(text) =>
-                                        setUpdateData({ ...updateData, validity_days: text })
-                                    }
-                                    style={{
-                                        height: 50, borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 12, backgroundColor: "#F9FAFB",
-                                        paddingHorizontal: 15, fontSize: 16, marginBottom: 18, marginTop: 5
-                                    }}
-                                />
-                            </View>
+                    renderItem={({ item }) => (
+                        <View
+                            style={{
+                                backgroundColor: "#FFF",
+                                padding: 10,
+                                borderRadius: 10,
+                                elevation: 3,
+                                marginBottom: 12,
+                            }}
+                        >
+                            {/* NAME */}
+                            <View
+                                style={{
+                                    width: "100%",
+                                    flexDirection: "row",
+                                }}
+                            >
+                                <View style={{ width: "20%" }}>
+                                    <Text
+                                        style={{
+                                            fontSize: 13,
+                                            fontWeight: "600",
+                                            color: COLORS.primary,
+                                        }}
+                                    >
+                                        Name
+                                    </Text>
+                                </View>
 
-                            <View style={{ marginTop: 2 }}>
-                                <Text style={{ color: COLORS.primary, fontWeight: "bold", fontSize: 12 }}>Is Active</Text>
-
-                                <View
-                                    style={{
-                                        height: 50, borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 12, backgroundColor: "#F9FAFB",
-                                        paddingHorizontal: 15, flexDirection: "row", justifyContent: "space-between",
-                                        alignItems: "center", marginBottom: 18,
-                                    }}
-                                >
-                                    <Text style={{ fontSize: 16, color: "#333", }}>{updateData.is_active ? "Active" : "Inactive"}</Text>
-
-                                    <Switch
-                                        value={updateData.is_active}
-                                        onValueChange={(value) =>
-                                            setUpdateData({
-                                                ...updateData,
-                                                is_active: value,
-                                            })
-                                        }
-                                        trackColor={{ false: "#D1D5DB", true: COLORS.primary }}
-                                        thumbColor="#FFFFFF"
-                                    />
+                                <View style={{ width: "80%" }}>
+                                    <Text
+                                        style={{
+                                            fontSize: 13,
+                                            fontWeight: "600",
+                                            color: "#000",
+                                        }}
+                                    >
+                                        {item.name}
+                                    </Text>
                                 </View>
                             </View>
 
-                            <View style={{ marginTop: 2 }}>
-                                <Text
-                                    style={{
-                                        color: COLORS.primary,
-                                        fontWeight: "bold",
-                                        fontSize: 12,
-                                        marginBottom: 10,
-                                    }}
-                                >
-                                    Description
-                                </Text>
-
-                                {updateData.description.map((item: any, index: any) => (
-                                    <View
-                                        key={index}
+                            {/* AMOUNT */}
+                            <View
+                                style={{
+                                    width: "100%",
+                                    flexDirection: "row",
+                                    marginTop: 5,
+                                }}
+                            >
+                                <View style={{ width: "20%" }}>
+                                    <Text
                                         style={{
-                                            flexDirection: "row",
-                                            alignItems: "center",
-                                            marginBottom: 12,
+                                            fontSize: 13,
+                                            fontWeight: "600",
+                                            color: COLORS.primary,
                                         }}
                                     >
-                                        <TextInput
-                                            placeholder={`Line ${index + 1}`}
-                                            placeholderTextColor="#999"
-                                            value={item}
-                                            onChangeText={(text) => handleDescriptionChange(text, index)}
-                                            style={{
-                                                flex: 1,
-                                                height: 50,
-                                                borderWidth: 1,
-                                                borderColor: "#E5E7EB",
-                                                borderRadius: 12,
-                                                backgroundColor: "#F9FAFB",
-                                                paddingHorizontal: 15,
-                                                fontSize: 16,
-                                            }}
-                                        />
+                                        Amount
+                                    </Text>
+                                </View>
 
-                                        <TouchableOpacity
-                                            onPress={() => removeDescription(index)}
-                                            style={{
-                                                marginLeft: 10,
-                                                backgroundColor: "#EF4444",
-                                                paddingHorizontal: 15,
-                                                paddingVertical: 14,
-                                                borderRadius: 10,
-                                            }}
-                                        >
-                                            <Text style={{ color: "#fff", fontWeight: "bold" }}>-</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                ))}
+                                <View style={{ width: "80%" }}>
+                                    <Text
+                                        style={{
+                                            fontSize: 13,
+                                            fontWeight: "700",
+                                            color: "#000",
+                                        }}
+                                    >
+                                        ₹{item.amount}
+                                    </Text>
+                                </View>
+                            </View>
 
+                            {/* VALIDITY */}
+                            <View
+                                style={{
+                                    width: "100%",
+                                    flexDirection: "row",
+                                    marginTop: 5,
+                                }}
+                            >
+                                <View style={{ width: "20%" }}>
+                                    <Text
+                                        style={{
+                                            fontSize: 13,
+                                            fontWeight: "600",
+                                            color: COLORS.primary,
+                                        }}
+                                    >
+                                        Validity
+                                    </Text>
+                                </View>
+
+                                <View style={{ width: "80%" }}>
+                                    <Text
+                                        style={{
+                                            fontSize: 13,
+                                            fontWeight: "700",
+                                            color: "#000",
+                                        }}
+                                    >
+                                        {item.validity_days} Days
+                                    </Text>
+                                </View>
+                            </View>
+
+                            {/* DESCRIPTION */}
+                            <View
+                                style={{
+                                    width: "100%",
+                                    flexDirection: "row",
+                                    marginTop: 5,
+                                }}
+                            >
+                                <View style={{ width: "20%" }}>
+                                    <Text
+                                        style={{
+                                            fontSize: 13,
+                                            fontWeight: "600",
+                                            color: COLORS.primary,
+                                        }}
+                                    >
+                                        Description
+                                    </Text>
+                                </View>
+
+                                <View style={{ width: "80%" }}>
+                                    {item.description?.map(
+                                        (
+                                            desc: string,
+                                            index: number
+                                        ) => (
+                                            <Text
+                                                key={index}
+                                                style={{
+                                                    marginTop: 2,
+                                                    fontSize: 13,
+                                                    fontWeight: "700",
+                                                    color: "#000",
+                                                }}
+                                            >
+                                                • {desc}
+                                            </Text>
+                                        )
+                                    )}
+                                </View>
+                            </View>
+
+                            {/* ACTIVE STATUS */}
+                            <View
+                                style={{
+                                    width: "100%",
+                                    flexDirection: "row",
+                                    marginTop: 5,
+                                }}
+                            >
+                                <View style={{ width: "20%" }}>
+                                    <Text
+                                        style={{
+                                            fontSize: 13,
+                                            fontWeight: "600",
+                                            color: COLORS.primary,
+                                        }}
+                                    >
+                                        Is Active
+                                    </Text>
+                                </View>
+
+                                <View style={{ width: "80%" }}>
+                                    <Text
+                                        style={{
+                                            color: item.is_active
+                                                ? "green"
+                                                : "red",
+                                        }}
+                                    >
+                                        {item.is_active
+                                            ? "Active"
+                                            : "Inactive"}
+                                    </Text>
+                                </View>
+                            </View>
+
+                            {/* BUTTONS */}
+                            <View
+                                style={{
+                                    flexDirection: "row",
+                                    justifyContent:
+                                        "space-between",
+                                    marginTop: 15,
+                                }}
+                            >
                                 <TouchableOpacity
-                                    onPress={addDescription}
+                                    onPress={() =>
+                                        openUpdateShow(
+                                            item?.id
+                                        )
+                                    }
                                     style={{
-                                        backgroundColor: COLORS.primary,
-                                        paddingVertical: 14,
-                                        borderRadius: 12,
+                                        backgroundColor:
+                                            "#2196F3",
+                                        borderRadius: 8,
+                                        width: "46%",
+                                        justifyContent:
+                                            "center",
                                         alignItems: "center",
-                                        marginTop: 5,
+                                        height: 45,
                                     }}
                                 >
                                     <Text
                                         style={{
-                                            color: "#fff",
-                                            fontWeight: "bold",
+                                            color: "#FFF",
+                                            textAlign: "center",
+                                            fontWeight:
+                                                "bold",
                                             fontSize: 15,
                                         }}
                                     >
-                                        + Add Line
+                                        EDIT
+                                    </Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={{
+                                        backgroundColor:
+                                            "red",
+                                        borderRadius: 8,
+                                        width: "46%",
+                                        justifyContent:
+                                            "center",
+                                        alignItems: "center",
+                                        height: 45,
+                                    }}
+                                    onPress={() =>
+                                        DeletePackageList(
+                                            item.id,
+                                            tokens
+                                        )
+                                    }
+                                >
+                                    <Text
+                                        style={{
+                                            color: "#FFF",
+                                            textAlign: "center",
+                                            fontWeight:
+                                                "bold",
+                                            fontSize: 15,
+                                        }}
+                                    >
+                                        Delete
                                     </Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
+                    )}
+                />
+            </View>
 
+            {/* ==============================
+                UPDATE MODAL
+            ============================== */}
+            <Modal
+                visible={updateShow}
+                animationType="slide"
+                transparent={true}
+                onRequestClose={closeUpdateShow}
+            >
+                <View
+                    style={{
+                        flex: 1,
+                        backgroundColor:
+                            "rgba(0,0,0,0.5)",
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}
+                >
+                    <KeyboardAvoidingView
+                        behavior={
+                            Platform.OS === "ios"
+                                ? "padding"
+                                : undefined
+                        }
+                        style={{
+                            width: "100%",
+                            alignItems: "center",
+                        }}
+                    >
                         <View
                             style={{
-                                flexDirection: "row",
-                                justifyContent: "space-between",
-                                marginTop: 20
+                                width: "90%",
+                                maxHeight: "100%",
+                                backgroundColor:
+                                    "white",
+                                borderRadius: 10,
+                                overflow: "hidden",
                             }}
                         >
-                            <TouchableOpacity
-                                onPress={closeUpdateShow}
-                                style={{
-                                    backgroundColor: "grey",
-                                    paddingVertical: 10,
-                                    paddingHorizontal: 20,
-                                    borderRadius: 8
+                            {/* ==============================
+                                SCROLLABLE MODAL CONTENT
+                            ============================== */}
+                            <ScrollView
+                                showsVerticalScrollIndicator={
+                                    true
+                                }
+                                keyboardShouldPersistTaps="handled"
+                                nestedScrollEnabled={true}
+                                contentContainerStyle={{
+                                    padding: 20,
+                                    paddingBottom: 30,
                                 }}
                             >
-                                <Text style={{ color: "white", fontSize: 16 }}>
-                                    Cancel
-                                </Text>
-                            </TouchableOpacity>
+                                {/* PACKAGE NAME */}
+                                <View>
+                                    <Text
+                                        style={{
+                                            color: COLORS.primary,
+                                            fontWeight:
+                                                "bold",
+                                            fontSize: 12,
+                                        }}
+                                    >
+                                        Package Name
+                                    </Text>
 
-                            <TouchableOpacity
-                                onPress={() => UpdatePackageList(selectedId, tokens)}
-                                style={{
-                                    backgroundColor: COLORS.primary,
-                                    paddingVertical: 10,
-                                    paddingHorizontal: 20,
-                                    borderRadius: 8
-                                }}
-                            >
-                                <Text style={{ color: "white", fontSize: 16 }}>
-                                    Update
-                                </Text>
-                            </TouchableOpacity>
+                                    <TextInput
+                                        placeholder="Enter Package Name"
+                                        placeholderTextColor="#999"
+                                        value={
+                                            updateData.name
+                                        }
+                                        onChangeText={(
+                                            text
+                                        ) =>
+                                            setUpdateData(
+                                                {
+                                                    ...updateData,
+                                                    name: text,
+                                                }
+                                            )
+                                        }
+                                        style={{
+                                            height: 50,
+                                            borderWidth: 1,
+                                            borderColor:
+                                                "#E5E7EB",
+                                            borderRadius: 12,
+                                            backgroundColor:
+                                                "#F9FAFB",
+                                            paddingHorizontal: 15,
+                                            fontSize: 16,
+                                            marginBottom: 18,
+                                            marginTop: 5,
+                                        }}
+                                    />
+                                </View>
+
+                                {/* AMOUNT */}
+                                <View>
+                                    <Text
+                                        style={{
+                                            color: COLORS.primary,
+                                            fontWeight:
+                                                "bold",
+                                            fontSize: 12,
+                                        }}
+                                    >
+                                        Amount
+                                    </Text>
+
+                                    <TextInput
+                                        placeholder="Enter Amount"
+                                        placeholderTextColor="#999"
+                                        value={String(
+                                            updateData.amount
+                                        )}
+                                        onChangeText={(
+                                            text
+                                        ) =>
+                                            setUpdateData(
+                                                {
+                                                    ...updateData,
+                                                    amount: text,
+                                                }
+                                            )
+                                        }
+                                        keyboardType="numeric"
+                                        style={{
+                                            height: 50,
+                                            borderWidth: 1,
+                                            borderColor:
+                                                "#E5E7EB",
+                                            borderRadius: 12,
+                                            backgroundColor:
+                                                "#F9FAFB",
+                                            paddingHorizontal: 15,
+                                            fontSize: 16,
+                                            marginBottom: 18,
+                                            marginTop: 5,
+                                        }}
+                                    />
+                                </View>
+
+                                {/* VALIDITY DAYS */}
+                                <View>
+                                    <Text
+                                        style={{
+                                            color: COLORS.primary,
+                                            fontWeight:
+                                                "bold",
+                                            fontSize: 12,
+                                        }}
+                                    >
+                                        Validity Days
+                                    </Text>
+
+                                    <TextInput
+                                        placeholder="Enter Validity Days"
+                                        placeholderTextColor="#999"
+                                        value={String(
+                                            updateData.validity_days
+                                        )}
+                                        onChangeText={(
+                                            text
+                                        ) =>
+                                            setUpdateData(
+                                                {
+                                                    ...updateData,
+                                                    validity_days:
+                                                        text,
+                                                }
+                                            )
+                                        }
+                                        keyboardType="numeric"
+                                        style={{
+                                            height: 50,
+                                            borderWidth: 1,
+                                            borderColor:
+                                                "#E5E7EB",
+                                            borderRadius: 12,
+                                            backgroundColor:
+                                                "#F9FAFB",
+                                            paddingHorizontal: 15,
+                                            fontSize: 16,
+                                            marginBottom: 18,
+                                            marginTop: 5,
+                                        }}
+                                    />
+                                </View>
+
+                                {/* IS ACTIVE */}
+                                <View>
+                                    <Text
+                                        style={{
+                                            color: COLORS.primary,
+                                            fontWeight:
+                                                "bold",
+                                            fontSize: 12,
+                                        }}
+                                    >
+                                        Is Active
+                                    </Text>
+
+                                    <View
+                                        style={{
+                                            height: 50,
+                                            borderWidth: 1,
+                                            borderColor:
+                                                "#E5E7EB",
+                                            borderRadius: 12,
+                                            backgroundColor:
+                                                "#F9FAFB",
+                                            paddingHorizontal: 15,
+                                            flexDirection:
+                                                "row",
+                                            justifyContent:
+                                                "space-between",
+                                            alignItems:
+                                                "center",
+                                            marginBottom: 18,
+                                        }}
+                                    >
+                                        <Text
+                                            style={{
+                                                fontSize: 16,
+                                                color: "#333",
+                                            }}
+                                        >
+                                            {updateData.is_active
+                                                ? "Active"
+                                                : "Inactive"}
+                                        </Text>
+
+                                        <Switch
+                                            value={
+                                                updateData.is_active
+                                            }
+                                            onValueChange={(
+                                                value
+                                            ) =>
+                                                setUpdateData(
+                                                    {
+                                                        ...updateData,
+                                                        is_active:
+                                                            value,
+                                                    }
+                                                )
+                                            }
+                                            trackColor={{
+                                                false: "#D1D5DB",
+                                                true: COLORS.primary,
+                                            }}
+                                            thumbColor="#FFFFFF"
+                                        />
+                                    </View>
+                                </View>
+
+                                {/* DESCRIPTION */}
+                                <View>
+                                    <Text
+                                        style={{
+                                            color: COLORS.primary,
+                                            fontWeight:
+                                                "bold",
+                                            fontSize: 12,
+                                            marginBottom: 10,
+                                        }}
+                                    >
+                                        Description
+                                    </Text>
+
+                                    {updateData.description.map(
+                                        (
+                                            item: string,
+                                            index: number
+                                        ) => (
+                                            <View
+                                                key={index}
+                                                style={{
+                                                    flexDirection:
+                                                        "row",
+                                                    alignItems:
+                                                        "center",
+                                                    marginBottom: 12,
+                                                }}
+                                            >
+                                                <TextInput
+                                                    placeholder={`Line ${
+                                                        index +
+                                                        1
+                                                    }`}
+                                                    placeholderTextColor="#999"
+                                                    value={item}
+                                                    onChangeText={(
+                                                        text
+                                                    ) =>
+                                                        handleDescriptionChange(
+                                                            text,
+                                                            index
+                                                        )
+                                                    }
+                                                    style={{
+                                                        flex: 1,
+                                                        height: 50,
+                                                        borderWidth: 1,
+                                                        borderColor:
+                                                            "#E5E7EB",
+                                                        borderRadius: 12,
+                                                        backgroundColor:
+                                                            "#F9FAFB",
+                                                        paddingHorizontal: 15,
+                                                        fontSize: 16,
+                                                    }}
+                                                />
+
+                                                <TouchableOpacity
+                                                    onPress={() =>
+                                                        removeDescription(
+                                                            index
+                                                        )
+                                                    }
+                                                    style={{
+                                                        marginLeft: 10,
+                                                        backgroundColor:
+                                                            "#EF4444",
+                                                        paddingHorizontal: 15,
+                                                        paddingVertical: 14,
+                                                        borderRadius: 10,
+                                                    }}
+                                                >
+                                                    <Text
+                                                        style={{
+                                                            color: "#fff",
+                                                            fontWeight:
+                                                                "bold",
+                                                        }}
+                                                    >
+                                                        -
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        )
+                                    )}
+
+                                    {/* ADD DESCRIPTION */}
+                                    <TouchableOpacity
+                                        onPress={
+                                            addDescription
+                                        }
+                                        style={{
+                                            backgroundColor:
+                                                COLORS.primary,
+                                            paddingVertical: 14,
+                                            borderRadius: 12,
+                                            alignItems:
+                                                "center",
+                                            marginTop: 5,
+                                        }}
+                                    >
+                                        <Text
+                                            style={{
+                                                color: "#fff",
+                                                fontWeight:
+                                                    "bold",
+                                                fontSize: 15,
+                                            }}
+                                        >
+                                            + Add Line
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                                {/* BOTTOM BUTTONS */}
+                                <View
+                                    style={{
+                                        flexDirection:
+                                            "row",
+                                        justifyContent:
+                                            "space-between",
+                                        marginTop: 20,
+                                    }}
+                                >
+                                    <TouchableOpacity
+                                        onPress={
+                                            closeUpdateShow
+                                        }
+                                        style={{
+                                            backgroundColor:
+                                                "grey",
+                                            paddingVertical: 10,
+                                            paddingHorizontal: 20,
+                                            borderRadius: 8,
+                                        }}
+                                    >
+                                        <Text
+                                            style={{
+                                                color: "white",
+                                                fontSize: 16,
+                                            }}
+                                        >
+                                            Cancel
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        onPress={() =>
+                                            UpdatePackageList(
+                                                selectedId,
+                                                tokens
+                                            )
+                                        }
+                                        style={{
+                                            backgroundColor:
+                                                COLORS.primary,
+                                            paddingVertical: 10,
+                                            paddingHorizontal: 20,
+                                            borderRadius: 8,
+                                        }}
+                                    >
+                                        <Text
+                                            style={{
+                                                color: "white",
+                                                fontSize: 16,
+                                            }}
+                                        >
+                                            Update
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </ScrollView>
                         </View>
-                    </View>
+                    </KeyboardAvoidingView>
                 </View>
             </Modal>
         </View>
     );
-}
+};
 
 export default PackageList;

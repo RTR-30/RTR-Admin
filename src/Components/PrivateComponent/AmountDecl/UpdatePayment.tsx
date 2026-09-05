@@ -27,7 +27,6 @@ const UpdatePayment = () => {
         try {
             const res = await getTripTypesServices(token);
             const { success, message, data } = res?.data;
-            console.log(res);
             
             if (success === true) {
                 showSuccess(message);

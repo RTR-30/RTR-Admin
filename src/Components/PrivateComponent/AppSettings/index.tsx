@@ -4,7 +4,6 @@ import {
     View,
     Text,
     FlatList,
-    ToastAndroid,
     TextInput,
     TouchableOpacity
 } from "react-native";
@@ -28,7 +27,6 @@ const AppSettings = () => {
         const payload = {
             settings: appSettingsData,
         }
-        console.log("sdskmsd",JSON.stringify(payload));
         
         try {
             const res = await updateReferralAmountService(payload, tokens)
@@ -58,7 +56,6 @@ const AppSettings = () => {
         try {
             const res = await referralAmountService(token);
             const { data: { data = {}, message = '', success } } = res;
-            console.log(JSON.stringify(res?.data));
 
             if (success === true) {
                 setAppSettingsData(res?.data?.data)

@@ -26,10 +26,7 @@ const CreatePayment = () => {
     const [tripPayment, setTripPayment] = useState({
         trip_type_id: "",
         hours: "",
-        total_amount: "",
-        driver_charge: "",
-        tax: "",
-        platformfees: ""
+        total_amount: ""
     })
 
     const handleTripTypes = async (tokens: any) => {
@@ -65,8 +62,7 @@ const CreatePayment = () => {
         if (
             !datas.trip_type_id ||
             !datas.hours ||
-            !datas.total_amount ||
-            !datas.driver_charge
+            !datas.total_amount 
         ) {
             showError("All fields are required");
             return;
@@ -76,10 +72,7 @@ const CreatePayment = () => {
         const payload = {
             tripTypeId: Number(datas.trip_type_id),
             hours: Number(datas.hours),
-            totalAmount: Number(datas.total_amount),
-            driverCharge: Number(datas.driver_charge),
-            tax: datas.tax ? Number(datas.tax) : null,
-            platformFee: datas.platformfees ? Number(datas.platformfees) : null
+            totalAmount: Number(datas.total_amount)
         }
         
         try {
@@ -215,29 +208,7 @@ const CreatePayment = () => {
                                         color: 'black',
                                         marginTop: 5
                                     }}
-                                />
-                            </View>
-
-                            <View style={{ marginVertical: 10 }}>
-                                <Text style={{ color: 'black', fontWeight: 'bold', fontSize: 16 }}>
-                                    Enter Driver Charge
-                                </Text>
-
-                                <TextInput
-                                    placeholder="Enter Driver Charge"
-                                    value={tripPayment.driver_charge.toString()}
-                                    keyboardType="numeric"
-                                    onChangeText={(text: any) =>
-                                        setTripPayment({ ...tripPayment, driver_charge: text })
-                                    }
-                                    style={{
-                                        borderWidth: 1,
-                                        borderColor: "#000",
-                                        padding: 10,
-                                        borderRadius: 5,
-                                        color: 'black',
-                                        marginTop: 5
-                                    }}
+                                    placeholderTextColor={"#000"}
                                 />
                             </View>
 
@@ -261,56 +232,11 @@ const CreatePayment = () => {
                                         color: 'black',
                                         marginTop: 5
                                     }}
+                                    placeholderTextColor={"#000"}
                                 />
                             </View>
 
-                            <View style={{ marginVertical: 10 }}>
-                                <Text style={{ color: 'black', fontWeight: 'bold', fontSize: 16 }}>
-                                    Enter Tax % (optional)
-                                </Text>
-
-                                <TextInput
-                                    placeholder="Enter Tax"
-                                    value={tripPayment.tax.toString()}
-                                    keyboardType="numeric"
-                                    onChangeText={(text: any) =>
-                                        setTripPayment({ ...tripPayment, tax: text })
-                                    }
-                                    style={{
-                                        borderWidth: 1,
-                                        borderColor: "#000",
-                                        padding: 10,
-                                        borderRadius: 5,
-                                        color: 'black',
-                                        marginTop: 5
-                                    }}
-                                />
-                            </View>
-
-                            <View style={{ marginVertical: 10 }}>
-                                <Text style={{ color: 'black', fontWeight: 'bold', fontSize: 16 }}>
-                                    Enter platform fees % (optional)
-                                </Text>
-
-                                <TextInput
-                                    placeholder="Enter platformfees"
-                                    value={tripPayment.platformfees.toString()}
-                                    keyboardType="numeric"
-                                    onChangeText={(text: any) =>
-                                        setTripPayment({ ...tripPayment, platformfees: text })
-                                    }
-                                    style={{
-                                        borderWidth: 1,
-                                        borderColor: "#000",
-                                        padding: 10,
-                                        borderRadius: 5,
-                                        color: 'black',
-                                        marginTop: 5
-                                    }}
-                                />
-                            </View>
-
-                            <View style={{ marginTop: '30%' }}>
+                            <View style={{ marginTop: '10%' }}>
                                 <TouchableOpacity
                                     style={{
                                         backgroundColor: COLORS.primary,

@@ -2,9 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
     View,
     Text,
-    TouchableOpacity,
     ActivityIndicator,
-    ToastAndroid,
     StyleSheet,
     RefreshControl,
     FlatList,
@@ -14,6 +12,7 @@ import Header from "../../../Common/PageHeader";
 import { totalbookinglist } from "./helperapi";
 import moment from "moment";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { showError } from "../../../Common/ToastMessage";
 
 const TotalBookingList = () => {
     const value = "Booking List";
@@ -37,14 +36,11 @@ const TotalBookingList = () => {
 
         try {
             const res = await totalbookinglist(value, limit, page, tokens);
-            console.log(res);
             
             setTotalCount(res?.data?.pagination?.total);
             setDatas(res?.data?.data || []);
         } catch (error) {
-            console.log(error);
-            
-            ToastAndroid.show("error booking list", ToastAndroid.SHORT);
+            showError("error booking list");
         } finally {
             setLoader(false)
             setOnRefreshing(false);
@@ -61,7 +57,7 @@ const TotalBookingList = () => {
         setDatas([]);
         handleBookingList("", currentPageLimit, 1, tokens).then(() => {
         }).catch(() => {
-            ToastAndroid.show("Check Internet Connection", ToastAndroid.SHORT);
+            showError("Check Internet Connection");
         }).finally(() => {
             setLoader(false);
             setOnRefreshing(false);

@@ -31,7 +31,6 @@ const UpdatePaymentList = () => {
 
     const [modalData, setModalData] = useState({
         hours: "",
-        driver_charge: "",
         total_amount: ""
     });
 
@@ -62,7 +61,6 @@ const UpdatePaymentList = () => {
             "tripTypeId": Number(selectedPayment.trip_type_id),
             "hours": Number(modalData?.hours),
             "totalAmount": Number(modalData?.total_amount),
-            "driverCharge": Number(modalData?.driver_charge)
         }
 
         try {
@@ -260,7 +258,6 @@ const UpdatePaymentList = () => {
                                 setSelectedPayment(item);
                                 setModalData({
                                     hours: String(item?.hours),
-                                    driver_charge: String(item?.driver_charge),
                                     total_amount: String(item?.total_amount)
                                 });
                                 openModal();
@@ -391,26 +388,6 @@ const UpdatePaymentList = () => {
                                 value={modalData.hours}
                                 onChangeText={(text) =>
                                     setModalData({ ...modalData, hours: text })
-                                }
-                                style={{
-                                    borderWidth: 1,
-                                    borderColor: "#aaa",
-                                    marginTop: 10,
-                                    padding: 10,
-                                    borderRadius: 8
-                                }}
-                                keyboardType="numeric"
-                            />
-                        </View>
-
-                        {/* Driver Charge */}
-                        <View style={{ marginTop: 10 }}>
-                            <Text style={{ fontSize: 18, fontWeight: 'bold', color: 'black' }}>Driver Charge</Text>
-                            <TextInput
-                                placeholder="Enter Driver Charge"
-                                value={modalData.driver_charge}
-                                onChangeText={(text) =>
-                                    setModalData({ ...modalData, driver_charge: text })
                                 }
                                 style={{
                                     borderWidth: 1,

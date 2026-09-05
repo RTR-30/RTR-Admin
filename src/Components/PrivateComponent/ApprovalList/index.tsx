@@ -4,7 +4,6 @@ import {
     Text,
     TouchableOpacity,
     ActivityIndicator,
-    ToastAndroid,
     StyleSheet,
     RefreshControl,
     FlatList,
@@ -12,12 +11,11 @@ import {
 } from "react-native";
 import Header from "../../../Common/PageHeader";
 import { submitApprovalService, totalapprovalList } from "./helperapi";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { showError, showSuccess } from "../../../Common/ToastMessage";
 
 const TotalApprovalList = () => {
     const value = "Approval List";
     const [loader, setLoader] = useState<boolean>(false);
-    const [tokens, setTokens] = useState(null);
     const [onRefreshing, setOnRefreshing] = useState<boolean>(false);
     const [footerLoader, setFooterLoader] = useState<boolean>(false);
     const [currentPageLimit, setCurrentPageLimit] = useState<any>(10);
@@ -27,7 +25,7 @@ const TotalApprovalList = () => {
     const [searchTimeout, setSearchTimeout] = useState<any>(null);
 
 
-    const handleApprovalList = async (value?: any, limit?: any, page?: any, tokens?: any) => {
+    const handleApprovalList = async (value?: any, limit?: any, page?: any) => {
         if (footerLoader) {
             setLoader(false);
         } else {
@@ -35,11 +33,12 @@ const TotalApprovalList = () => {
         }
 
         try {
-            const res = await totalapprovalList(value, limit, page, tokens);
+            const res = await totalapprovalList(value, limit, page);
+            
             setTotalCount(res?.data?.pagination?.total);
             setDatas(res?.data?.data || []);
         } catch (error) {
-            ToastAndroid.show("error approval list", ToastAndroid.SHORT);
+            showError("error approval list");
         } finally {
             setLoader(false)
             setOnRefreshing(false);
@@ -54,9 +53,9 @@ const TotalApprovalList = () => {
         setTotalCount(null);
         setCurrentPageLimit(1);
         setDatas([]);
-        handleApprovalList("", currentPageLimit, 1, tokens).then(() => {
+        handleApprovalList("", currentPageLimit, 1).then(() => {
         }).catch(() => {
-            ToastAndroid.show("Check Internet Connection", ToastAndroid.SHORT);
+            showError("Check Internet Connection");
         }).finally(() => {
             setLoader(false);
             setOnRefreshing(false);
@@ -75,7 +74,7 @@ const TotalApprovalList = () => {
 
         // Set a new timeout
         const timeout = setTimeout(() => {
-            handleApprovalList(text.trim(), currentPageLimit, 1, tokens);
+            handleApprovalList(text.trim(), currentPageLimit, 1);
         }, 2000); // 2 seconds debounce
 
         setSearchTimeout(timeout);
@@ -84,9 +83,16 @@ const TotalApprovalList = () => {
     const handleSubmit = async (userid: any) => {
         setLoader(true);
         try {
-            const res = await submitApprovalService(userid, tokens)
+            const res = await submitApprovalService(userid)
+            const { data: { success = false, message = '' } } = res;
+            if(success){
+                handleApprovalList("", currentPageLimit, 1);
+                showSuccess(message)
+            } else {
+                showError(message)
+            }
         } catch (error) {
-            ToastAndroid.show("Error Submit", ToastAndroid.SHORT);
+            showError(error);
         } finally {
             setLoader(false);
         }
@@ -105,8 +111,8 @@ const TotalApprovalList = () => {
                 </View>
 
                 <View style={{ width: '20%', height: '100%', justifyContent:'center', alignItems:'center' }}>
-                    <TouchableOpacity onPress={()=>handleSubmit(item?.partneruserid)}>
-                        <Text style={{ textAlign: 'center', color: 'black', fontWeight: '700' }}>Approve</Text>
+                    <TouchableOpacity style={{backgroundColor: "green", padding:9, borderRadius:10}} onPress={()=>handleSubmit(item?.partneruserid)}>
+                        <Text style={{ textAlign: 'center', color: 'white', fontWeight: '700' }}>Approve</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -130,23 +136,8 @@ const TotalApprovalList = () => {
         )
     }
 
-    const userStoredData = async () => {
-        try {
-            const getDatas: any = await AsyncStorage.getItem("storeData");
-            const storeData = JSON.parse(getDatas);
-            
-            const token = storeData?.token
-            if (token) {
-                setTokens(token);
-                handleApprovalList("", currentPageLimit, 1, token);
-            }
-        } catch (error) {
-            console.error("Error fetching user data from AsyncStorage:", error);
-        }
-    }
-
     useEffect(() => {
-        userStoredData();
+        handleApprovalList("", currentPageLimit, 1);
         return () => {
             if (searchTimeout) {
                 clearTimeout(searchTimeout);

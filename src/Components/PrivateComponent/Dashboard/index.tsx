@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
     View,
     Text,
     TouchableOpacity,
-    ActivityIndicator,
-    ToastAndroid
+    ScrollView,
 } from "react-native";
 import Header from "../../../Common/PageHeader";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -15,127 +14,126 @@ const Dashboard = () => {
     const value = "Home";
     const navigation: any = useNavigation();
 
-    const goToCarOwner = () => {
-        navigation.navigate("CarOwner")
-    }
+    const menuItems = [
+        {
+            title: "Total Car Owner",
+            icon: "car",
+            iconType: "ion",
+            onPress: () => navigation.navigate("CarOwner"),
+        },
+        {
+            title: "Total Car Driver",
+            icon: "car-sport",
+            iconType: "ion",
+            onPress: () => navigation.navigate("CarDriver"),
+        },
+        {
+            title: "Total Booking List",
+            icon: "book",
+            iconType: "ion",
+            onPress: () => navigation.navigate("BookingList"),
+        },
+        {
+            title: "Total Approval List",
+            icon: "thumbs-up",
+            iconType: "ion",
+            onPress: () => navigation.navigate("ApprovalList"),
+        },
+        {
+            title: "Amount Declaration",
+            icon: "payments",
+            iconType: "material",
+            onPress: () => navigation.navigate("AmountDeclearation"),
+        },
+        {
+            title: "App Settings",
+            icon: "settings",
+            iconType: "ion",
+            onPress: () => navigation.navigate("AppSettings"),
+        },
+        {
+            title: "Package Management",
+            icon: "file-tray-full",
+            iconType: "ion",
+            onPress: () => navigation.navigate("PackageManagement"),
+        },
+        {
+            title: "Gear Type",
+            icon: "cog",
+            iconType: "ion",
+            onPress: () => navigation.navigate("GearType"),
+        },
+        {
+            title: "Feedback",
+            icon: "chatbox-ellipses",
+            iconType: "ion",
+            onPress: () => navigation.navigate("Feedback"),
+        },
+        {
+            title: "Withdrawal",
+            icon: "wallet-sharp",
+            iconType: "ion",
+            onPress: () => navigation.navigate("Withdrawal"),
+        },
+    ];
 
-    const goToCarDriver = () => {
-        navigation.navigate("CarDriver")
-    }
+    const renderIcon = (item: any) => {
+        if (item.iconType === "material") {
+            return (
+                <MaterialIcons name={item.icon} size={32} color="#000"/>
+            );
+        }
 
-    const goToBookingList = () => {
-        navigation.navigate("BookingList")
-    }
-
-    const goToApprovalList = () => {
-        navigation.navigate("ApprovalList")
-    }
-
-    const goToAmountDeclearation = () => {
-        navigation.navigate("AmountDeclearation")
-    }
-
-    const goToAppSettings = () => {
-        navigation.navigate("AppSettings")
-    }
-
-    const goToPackageManagement = () => {
-        navigation.navigate("PackageManagement")
-    }
-
-    const goToFeedback = () => {
-        navigation.navigate("Feedback")
-    }
-
-    const goToGearType = () => {
-        navigation.navigate("GearType")
-    }
+        return (
+            <Ionicons name={item.icon} size={32} color="#000" />
+        );
+    };
 
     return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
-            <View style={{ flex: 1 }}>
-                <Header value={value} />
-            </View>
+        <View style={{ flex: 1, backgroundColor: "#fff" }} >
+            <Header value={value} />
 
-            <View style={{ flex: 9, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                <View style={{ flexDirection: 'row', width: '100%', height: '10%', justifyContent: 'space-around', borderWidth: "0.5px" }}>
-                    <View style={{ width: '45%', backgroundColor: '#fff', shadowColor: '#000', borderRadius: 10, elevation: 4 }}>
-                        <TouchableOpacity onPress={goToCarOwner} style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                            <Ionicons name="car" color={"black"} size={30} />
-                            <Text style={{ color: '#000', fontSize: 14, fontWeight: '800', textAlign: 'center' }}>Total Car Owner</Text>
-                        </TouchableOpacity>
-                    </View>
+            <ScrollView
+                contentContainerStyle={{ padding: 15, paddingBottom: 30 }}
+                showsVerticalScrollIndicator={false}
+            >
+                <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" }} >
+                    {menuItems.map((item, index) => (
+                        <TouchableOpacity
+                            key={index}
+                            onPress={item.onPress}
+                            activeOpacity={0.7}
+                            style={{
+                                width: "48%",
+                                height: 120,
+                                backgroundColor: "#fff",
+                                borderRadius: 12,
+                                marginBottom: 15,
+                                justifyContent: "center",
+                                alignItems: "center",
 
-                    <View style={{ width: '45%', backgroundColor: '#fff', shadowColor: '#000', borderRadius: 10, elevation: 4 }}>
-                        <TouchableOpacity onPress={goToCarDriver} style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                            <Ionicons name="car-sport" color={"black"} size={30} />
-                            <Text style={{ color: '#000', fontSize: 14, fontWeight: '800', textAlign: 'center' }}>Total Car Driver</Text>
+                                // Android
+                                elevation: 4,
+
+                                // iOS
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.15,
+                                shadowRadius: 4,
+                            }}
+                        >
+                            {renderIcon(item)}
+
+                            <Text style={{ color: "#000", fontSize: 14, fontWeight: "800", textAlign: "center", marginTop: 10 }} >{item.title}</Text>
                         </TouchableOpacity>
-                    </View>
+                    ))}
                 </View>
-
-                <View style={{ flexDirection: 'row', width: '100%', height: '10%', justifyContent: 'space-around', marginTop: '10%' }}>
-                    <View style={{ width: '45%', backgroundColor: '#fff', shadowColor: '#000', borderRadius: 10, elevation: 4 }}>
-                        <TouchableOpacity onPress={goToBookingList} style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                            <Ionicons name="book" color={"black"} size={30} />
-                            <Text style={{ color: '#000', fontSize: 14, fontWeight: '800', textAlign: 'center' }}>Total Booking List</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    <View style={{ width: '45%', backgroundColor: '#fff', shadowColor: '#000', borderRadius: 10, elevation: 4 }}>
-                        <TouchableOpacity onPress={goToApprovalList} style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                            <Ionicons name="thumbs-up" color={"black"} size={30} />
-                            <Text style={{ color: '#000', fontSize: 14, fontWeight: '800', textAlign: 'center' }}>Total Approval List</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
-                <View style={{ flexDirection: 'row', width: '100%', height: '10%', justifyContent: 'space-around', marginTop: '10%' }}>
-                    <View style={{ width: '45%', backgroundColor: '#fff', shadowColor: '#000', borderRadius: 10, elevation: 4 }}>
-                        <TouchableOpacity onPress={goToAmountDeclearation} style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                            <MaterialIcons name="payments" color={"black"} size={30} />
-                            <Text style={{ color: '#000', fontSize: 14, fontWeight: '800', textAlign: 'center' }}>Amount Declearation</Text>
-                        </TouchableOpacity>
-                    </View>
-
-
-                    <View style={{ width: '45%', backgroundColor: '#fff', shadowColor: '#000', borderRadius: 10, elevation: 4 }}>
-                        <TouchableOpacity onPress={goToAppSettings} style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                            <Ionicons name="settings" color={"black"} size={30} />
-                            <Text style={{ color: '#000', fontSize: 14, fontWeight: '800', textAlign: 'center' }}>App Settings</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
-                <View style={{ flexDirection: 'row', width: '100%', height: '10%', justifyContent: 'space-around', marginTop: '10%' }}>
-                    <View style={{ width: '45%', backgroundColor: '#fff', shadowColor: '#000', borderRadius: 10, elevation: 4 }}>
-                        <TouchableOpacity onPress={goToPackageManagement} style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                            <Ionicons name="file-tray-full" color={"black"} size={30} />
-                            <Text style={{ color: '#000', fontSize: 14, fontWeight: '800', textAlign: 'center' }}>Package Management</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    <View style={{ width: '45%', backgroundColor: '#fff', shadowColor: '#000', borderRadius: 10, elevation: 4 }}>
-                        <TouchableOpacity onPress={goToGearType} style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                            <Ionicons name="cog" color={"black"} size={30} />
-                            <Text style={{ color: '#000', fontSize: 14, fontWeight: '800', textAlign: 'center' }}>Gear Type</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
-                <View style={{ flexDirection: 'row', width: '100%', height: '10%', justifyContent: 'space-around', marginTop: '10%' }}>
-                    <View style={{ width: '45%', backgroundColor: '#fff', shadowColor: '#000', borderRadius: 10, elevation: 4 }}>
-                        <TouchableOpacity onPress={goToFeedback} style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                            <Ionicons name="chatbox-ellipses" color={"black"} size={30} />
-                            <Text style={{ color: '#000', fontSize: 14, fontWeight: '800', textAlign: 'center' }}>Feedback</Text>
-                        </TouchableOpacity>
-                    </View>
-
-
-                </View>
-            </View>
+            </ScrollView>
         </View>
-    )
-}
+    );
+};
 
-export default Dashboard
+export default Dashboard;

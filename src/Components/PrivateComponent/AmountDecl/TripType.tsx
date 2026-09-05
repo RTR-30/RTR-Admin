@@ -5,7 +5,6 @@ import {
     TouchableOpacity,
     TextInput,
     ScrollView,
-    ToastAndroid,
     ActivityIndicator
 } from "react-native";
 import Header from "../../../Common/PageHeader";
@@ -13,6 +12,7 @@ import { createTripTypeService } from "./helperapi";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { COLORS } from "../../../utils/ColorCode";
+import { showError, showSuccess } from "../../../Common/ToastMessage";
 
 const TripType = () => {
 
@@ -56,12 +56,12 @@ const TripType = () => {
             
             if(res?.data?.success === true){
                 navigation.goBack();
-                ToastAndroid.show(res?.data?.message, ToastAndroid.SHORT);
+                showSuccess(res?.data?.message);
             } else {
-                ToastAndroid.show(res?.data?.message, ToastAndroid.SHORT);
+                showError(res?.data?.message);
             }
         } catch (error: any) {
-            ToastAndroid.show(error, ToastAndroid.SHORT)
+            showError(error)
         } finally {
             setLoading(false);
         }
@@ -119,6 +119,7 @@ const TripType = () => {
                             color: 'black',
                             marginTop: 5
                         }}
+                        placeholderTextColor={"#000"}
                     />
                 </View>
 
@@ -145,6 +146,7 @@ const TripType = () => {
                                     color: 'black',
                                     textAlignVertical: "top"
                                 }}
+                                placeholderTextColor={"#000"}
                             />
 
                             {tripTypes.description.length > 1 && (

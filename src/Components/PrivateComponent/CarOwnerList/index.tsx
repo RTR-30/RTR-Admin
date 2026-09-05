@@ -2,9 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
     View,
     Text,
-    TouchableOpacity,
     ActivityIndicator,
-    ToastAndroid,
     FlatList,
     StyleSheet,
     TextInput,
@@ -13,6 +11,7 @@ import {
 import Header from "../../../Common/PageHeader";
 import { totalcarownerUser } from "./helperapi";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { showError } from "../../../Common/ToastMessage";
 
 const TotalCarOwnerList = () => {
     const value = "Car Owner";
@@ -40,7 +39,7 @@ const TotalCarOwnerList = () => {
             setTotalCount(res?.data?.pagination?.total);
             setTotalCarOwner(res?.data?.data || []);
         } catch (error) {
-            ToastAndroid.show("Error fetching car owner data", ToastAndroid.SHORT);
+            showError(error);
         } finally {
             setLoader(false);
             setOnRefreshing(false);
@@ -57,7 +56,7 @@ const TotalCarOwnerList = () => {
         setTotalCarOwner([]);
         handleCarOwner("", currentPageLimit, 1, tokens).then(() => {
         }).catch(() => {
-            ToastAndroid.show("Check Internet Connection", ToastAndroid.SHORT);
+            showError("Check Internet Connection");
         }).finally(() => {
             setLoader(false);
             setOnRefreshing(false);
