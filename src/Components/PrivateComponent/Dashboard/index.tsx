@@ -75,6 +75,12 @@ const Dashboard = () => {
             iconType: "ion",
             onPress: () => navigation.navigate("Withdrawal"),
         },
+        {
+            title: "App Version Control",
+            icon: 'rocket-sharp',
+            iconType: "ion",
+            onPress: () => navigation.navigate("AppVersionControl"),
+        }
     ];
 
     const renderIcon = (item: any) => {

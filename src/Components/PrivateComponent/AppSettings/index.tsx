@@ -16,7 +16,6 @@ import { COLORS } from "../../../utils/ColorCode";
 const AppSettings = () => {
     const value = "AppSettings"
     const [loading, setLoading] = useState<boolean>(false);
-    const [tokens, setTokens] = useState<any>(null);
     // const [referral, setRefferal] = useState<any>({});
 
     const [appSettingsData, setAppSettingsData] = useState<any>([])
@@ -29,10 +28,10 @@ const AppSettings = () => {
         }
         
         try {
-            const res = await updateReferralAmountService(payload, tokens)
+            const res = await updateReferralAmountService(payload)
             const { data: { data = {}, message = '', success } } = res;
             if (success === true) {
-                fetchReferralAmount(tokens)
+                fetchReferralAmount()
                 showSuccess(message)
             } else {
                 showError(message)
@@ -50,11 +49,11 @@ const AppSettings = () => {
         setAppSettingsData(updatedData);
     };
 
-    const fetchReferralAmount = async (token: any) => {
+    const fetchReferralAmount = async () => {
         setLoading(true);
 
         try {
-            const res = await referralAmountService(token);
+            const res = await referralAmountService();
             const { data: { data = {}, message = '', success } } = res;
 
             if (success === true) {
@@ -70,23 +69,8 @@ const AppSettings = () => {
         }
     }
 
-    const fetchUserData = async () => {
-        try {
-            const getDatas: any = await AsyncStorage.getItem("storeData");
-            const storeData = JSON.parse(getDatas);
-
-            const token = storeData?.token
-            if (token) {
-                setTokens(token);
-                fetchReferralAmount(token)
-            }
-        } catch (error) {
-            showError(error);
-        }
-    }
-
     useEffect(() => {
-        fetchUserData()
+        fetchReferralAmount()
     }, []);
 
     return (

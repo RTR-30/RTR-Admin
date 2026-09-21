@@ -20,8 +20,7 @@ const GearTypeList = () => {
     const value = "Gear Type List";
     const navigation: any = useNavigation();
     const [loading, setLoading] = useState(false);
-    const [tokens, setTokens] = useState(null);
-
+    
     const [gearList, setGearList] = useState<any[]>([]);
     const [updateGear, setUpdateGear] = useState<any>({
         id: '',
@@ -40,14 +39,14 @@ const GearTypeList = () => {
         setModalVisible(true);
     };
 
-    const deleteGear = async (id: any, token: any) => {
+    const deleteGear = async (id: any) => {
         setLoading(true);
         try {
-            const res = await DeleteGearTypeService(id, token);
+            const res = await DeleteGearTypeService(id);
             const { data: { message = "", success = false } } = res
             if (success === true) {
                 showSuccess(message)
-                fetchGearTypeList(token)
+                fetchGearTypeList()
             } else {
                 showError(message)
             }
@@ -58,20 +57,20 @@ const GearTypeList = () => {
         }
     }
 
-    const updateGearTypes = async (data: any, token: any) => {
+    const updateGearTypes = async (data: any) => {
         setLoading(true);
         const payload = {
             name: data?.name,
             is_active: data?.is_active
         }
         try {
-            const res = await UpdateGearTypeService(data?.id, payload, token);
+            const res = await UpdateGearTypeService(data?.id, payload);
             const { data: { message = "", success = false } } = res;
 
             if (success === true) {
                 showSuccess(message)
                 setModalVisible(false)
-                fetchGearTypeList(token)
+                fetchGearTypeList()
             } else {
                 showError(message)
             }
@@ -82,10 +81,10 @@ const GearTypeList = () => {
         }
     }
 
-    const fetchGearTypeList = async (token: any) => {
+    const fetchGearTypeList = async () => {
         setLoading(true);
         try {
-            const res = await GetGearTypeService(token);
+            const res = await GetGearTypeService();
             const { data: { data = [], message = "", success = false } } = res
             if (success) {
                 setGearList(data);
@@ -98,24 +97,9 @@ const GearTypeList = () => {
             setLoading(false)
         }
     }
-
-    const userStoredData = async () => {
-        try {
-            const getDatas: any = await AsyncStorage.getItem("storeData");
-            const storeData = JSON.parse(getDatas);
-
-            const token = storeData?.token
-            if (token) {
-                setTokens(token);
-                fetchGearTypeList(token);
-            }
-        } catch (error) {
-            showError(error);
-        }
-    }
-
+    
     useEffect(() => {
-        userStoredData()
+        fetchGearTypeList();
     }, []);
 
     return (
@@ -173,7 +157,7 @@ const GearTypeList = () => {
                                         </View>
 
                                         <View style={{ backgroundColor: 'red', justifyContent: 'center', alignItems: 'center', width: '45%', borderRadius: '10%' }}>
-                                            <TouchableOpacity onPress={() => deleteGear(item?.id, tokens)} style={{ padding: 10, width: '100%' }}>
+                                            <TouchableOpacity onPress={() => deleteGear(item?.id)} style={{ padding: 10, width: '100%' }}>
                                                 <Text style={{ textAlign: 'center', color: '#fff', fontWeight: 'bold', fontSize: 12 }}>Delete</Text>
                                             </TouchableOpacity>
                                         </View>
@@ -260,7 +244,7 @@ const GearTypeList = () => {
                                     backgroundColor: "#2196F3", padding: 12, borderRadius: 8, width: "45%",
                                 }}
                                 onPress={() => {
-                                    updateGearTypes(updateGear, tokens)
+                                    updateGearTypes(updateGear)
                                 }}
                             >
                                 <Text style={{ color: "#fff", textAlign: "center", fontWeight: "bold" }} >

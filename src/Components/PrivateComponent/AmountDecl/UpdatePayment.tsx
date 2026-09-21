@@ -17,15 +17,13 @@ const UpdatePayment = () => {
     const value = "Update Payment";
     const navigation: any = useNavigation();
     const [loading, setLoading] = useState<boolean>(false);
-    // const [tokens, setTokens] = useState(null);
-
+    
     const [tripTypes, setTripTypes] = useState<any>(null);
 
-    const handleTripTypes = async (tokens: any) => {
+    const handleTripTypes = async () => {
         setLoading(true);
-        const token = tokens;
         try {
-            const res = await getTripTypesServices(token);
+            const res = await getTripTypesServices();
             const { success, message, data } = res?.data;
             
             if (success === true) {
@@ -51,23 +49,8 @@ const UpdatePayment = () => {
         )
     }
 
-    const userStoredData = async () => {
-        try {
-            const getDatas: any = await AsyncStorage.getItem("storeData");
-            const storeData = JSON.parse(getDatas);
-            
-            const token = storeData?.token
-            if (token) {
-                // setTokens(token);
-                handleTripTypes(token)
-            }
-        } catch (error) {
-            console.error("Error fetching user data from AsyncStorage:", error);
-        }
-    }
-
     useEffect(() => {
-        userStoredData();
+        handleTripTypes()
     }, [])
 
     return (

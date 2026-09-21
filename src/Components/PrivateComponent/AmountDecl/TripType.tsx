@@ -18,7 +18,6 @@ const TripType = () => {
 
     const value = "Trip Type";
     const navigation: any = useNavigation();
-    const [tokens, setTokens] = useState(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [tripTypes, setTripTypes] = useState({
         tripType: "",
@@ -45,14 +44,13 @@ const TripType = () => {
 
     const handleSubmit = async (datas: any) => {
         setLoading(true);
-        const token = tokens;
         const payload = {
             tripType: datas.tripType,
             description: JSON.stringify(datas.description)
         }
 
         try {
-            const res = await createTripTypeService(payload, token)
+            const res = await createTripTypeService(payload)
             
             if(res?.data?.success === true){
                 navigation.goBack();
@@ -67,25 +65,6 @@ const TripType = () => {
         }
 
     };
-
-
-    const userStoredData = async () => {
-        try {
-            const getDatas: any = await AsyncStorage.getItem("storeData");
-            const storeData = JSON.parse(getDatas);
-            
-            const token = storeData?.token
-            if (token) {
-                setTokens(token);
-            }
-        } catch (error) {
-            console.error("Error fetching user data from AsyncStorage:", error);
-        }
-    }
-
-    useEffect(() => {
-        userStoredData();
-    }, [])
 
     return (
         <View style={{ flex: 1 }}>

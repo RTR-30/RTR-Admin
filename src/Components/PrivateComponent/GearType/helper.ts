@@ -1,34 +1,19 @@
 import axios from "axios";
 import { GearTypeApis } from "../../../../environment/apimanager";
+import { Delete, Get, Post, Put } from "../../../Common/HttpService";
 
-export const CreateGearTypeService = (payload: any, token: any) => {
-    return axios.post(`${GearTypeApis}`, payload, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        }
-    }) 
+export const CreateGearTypeService = (payload: any) => {
+    return Post(`${GearTypeApis}`, payload, "rtrToken") 
 }
 
-export const GetGearTypeService = (token: any) => {
-    return axios.get(`${GearTypeApis}`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        }
-    }) 
+export const GetGearTypeService = () => {
+    return Get(`${GearTypeApis}`, "rtrToken") 
 }
 
-export const UpdateGearTypeService = (id: any, payload: any, token: any) => {
-    return axios.put(`${GearTypeApis}/${id}`, payload, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        }
-    }) 
+export const UpdateGearTypeService = (id: any, payload: any) => {
+    return Put(`${GearTypeApis}/${id}`, payload, "rtrToken") 
 }
 
-export const DeleteGearTypeService = (id: any, token: any) => {
-    return axios.delete(`${GearTypeApis}/${id}`,{
-        headers: {
-            Authorization: `Bearer ${token}`,
-        }
-    }) 
+export const DeleteGearTypeService = (id: any) => {
+    return Delete(`${GearTypeApis}/${id}`, "rtrToken") 
 }

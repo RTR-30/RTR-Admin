@@ -17,7 +17,6 @@ import { showError } from "../../../Common/ToastMessage";
 const TotalBookingList = () => {
     const value = "Booking List";
     const [loader, setLoader] = useState<boolean>(false);
-    const [tokens, setTokens] = useState(null);
     const [onRefreshing, setOnRefreshing] = useState<boolean>(false);
     const [footerLoader, setFooterLoader] = useState<boolean>(false);
     const [currentPageLimit, setCurrentPageLimit] = useState<any>(10);
@@ -27,7 +26,7 @@ const TotalBookingList = () => {
     const [searchTimeout, setSearchTimeout] = useState<any>(null);
 
 
-    const handleBookingList = async (value?: any, limit?: any, page?: any, tokens?: any) => {
+    const handleBookingList = async (value?: any, limit?: any, page?: any) => {
         if (footerLoader) {
             setLoader(false);
         } else {
@@ -35,7 +34,7 @@ const TotalBookingList = () => {
         }
 
         try {
-            const res = await totalbookinglist(value, limit, page, tokens);
+            const res = await totalbookinglist(value, limit, page);
             
             setTotalCount(res?.data?.pagination?.total);
             setDatas(res?.data?.data || []);
@@ -55,7 +54,7 @@ const TotalBookingList = () => {
         setTotalCount(null);
         setCurrentPageLimit(1);
         setDatas([]);
-        handleBookingList("", currentPageLimit, 1, tokens).then(() => {
+        handleBookingList("", currentPageLimit, 1).then(() => {
         }).catch(() => {
             showError("Check Internet Connection");
         }).finally(() => {
@@ -74,7 +73,7 @@ const TotalBookingList = () => {
         }
 
         const timeout = setTimeout(() => {
-            handleBookingList(text.trim(), currentPageLimit, 1, tokens);
+            handleBookingList(text.trim(), currentPageLimit, 1);
         }, 2000);
 
         setSearchTimeout(timeout);
@@ -112,23 +111,8 @@ const TotalBookingList = () => {
         )
     }
 
-    const userStoredData = async () => {
-        try {
-            const getDatas: any = await AsyncStorage.getItem("storeData");
-            const storeData = JSON.parse(getDatas);
-            
-            const token = storeData?.token
-            if (token) {
-                setTokens(token);
-                handleBookingList("", currentPageLimit, 1, token);
-            }
-        } catch (error) {
-            console.error("Error fetching user data from AsyncStorage:", error);
-        }
-    }
-
     useEffect(() => {
-        userStoredData();
+        handleBookingList("", currentPageLimit, 1);
 
         return () => {
             if (searchTimeout) {

@@ -24,6 +24,7 @@ import Feedback from "../Components/PrivateComponent/Feedbacks";
 import CreateFeedback from "../Components/PrivateComponent/Feedbacks/CreateFeedback";
 import FeedbackList from "../Components/PrivateComponent/Feedbacks/FeedbackList";
 import Withdrawal from "../Components/PrivateComponent/Withdraws";
+import AppVersionControl from "../Components/PrivateComponent/AppVersionControl";
 
 const Stack = createNativeStackNavigator();
 
@@ -56,6 +57,7 @@ const NavigationPage = () => {
                 <Stack.Screen name="CreateFeedback" component={CreateFeedback}/>
                 <Stack.Screen name="FeedbackList" component={FeedbackList}/>
                 <Stack.Screen name="Withdrawal" component={Withdrawal}/>
+                <Stack.Screen name="AppVersionControl" component={AppVersionControl}/>
             </Stack.Navigator>
         </NavigationContainer>
     );

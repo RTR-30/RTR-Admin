@@ -17,7 +17,6 @@ const TotalCarOwnerList = () => {
     const value = "Car Owner";
     const [loader, setLoader] = useState<boolean>(false);
     const [onRefreshing, setOnRefreshing] = useState<boolean>(false);
-    const [tokens, setTokens] = useState(null);
     const [footerLoader, setFooterLoader] = useState<boolean>(false);
 
     const [currentPageLimit, setCurrentPageLimit] = useState<any>(10);
@@ -26,7 +25,7 @@ const TotalCarOwnerList = () => {
     const [search, setSearch] = useState<any>(null);
     const [searchTimeout, setSearchTimeout] = useState<any>(null);
 
-    const handleCarOwner = async (value?: any, limit?: any, page?: any, tokens?:any) => {
+    const handleCarOwner = async (value?: any, limit?: any, page?: any) => {
 
         if (footerLoader) {
             setLoader(false);
@@ -34,7 +33,7 @@ const TotalCarOwnerList = () => {
             setLoader(true);
         }
         try {
-            const res = await totalcarownerUser(value, limit, page, tokens);
+            const res = await totalcarownerUser(value, limit, page);
             
             setTotalCount(res?.data?.pagination?.total);
             setTotalCarOwner(res?.data?.data || []);
@@ -54,7 +53,7 @@ const TotalCarOwnerList = () => {
         setTotalCount(null);
         setCurrentPageLimit(1);
         setTotalCarOwner([]);
-        handleCarOwner("", currentPageLimit, 1, tokens).then(() => {
+        handleCarOwner("", currentPageLimit, 1).then(() => {
         }).catch(() => {
             showError("Check Internet Connection");
         }).finally(() => {
@@ -75,7 +74,7 @@ const TotalCarOwnerList = () => {
 
         // Set a new timeout
         const timeout = setTimeout(() => {
-            handleCarOwner(text.trim(), currentPageLimit, 1, tokens);
+            handleCarOwner(text.trim(), currentPageLimit, 1);
         }, 2000); // 2 seconds debounce
 
         setSearchTimeout(timeout);
@@ -109,24 +108,8 @@ const TotalCarOwnerList = () => {
         )
     }
 
-    const userStoredData = async () => {
-        try {
-            const getDatas: any = await AsyncStorage.getItem("storeData");
-            const storeData = JSON.parse(getDatas);
-            
-            const token = storeData?.token
-            if (token) {
-                setTokens(token);
-                handleCarOwner("", currentPageLimit, 1, token);
-            }
-        } catch (error) {
-            console.error("Error fetching user data from AsyncStorage:", error);
-        }
-    }
-
     useEffect(() => {
-        
-        userStoredData();
+        handleCarOwner("", currentPageLimit, 1);
 
         return () => {
             if (searchTimeout) {

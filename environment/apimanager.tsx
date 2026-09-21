@@ -1,5 +1,5 @@
 // const baseUri = "http://10.0.2.2:8000/";
-const baseUri = "http://10.109.252.206:8000/";
+const baseUri = "http://10.47.98.206:8000/";
 
 const base = "admin/";
 const paymentBase = "payment/";
@@ -16,8 +16,9 @@ export const totalcardriverapi = `${baseUri}${base}partners`;
 export const totalbookinglistapi = `${baseUri}${base}bookings`;
 export const totalapprovedapi = `${baseUri}${base}partner-verifications`;
 export const submitapprovalapi = `${baseUri}${base}partners/`;
+export const AppVersionApi = `${baseUri}${base}app-versions`;
 
-export const createTripTypeApi = `${baseUri}${paymentBase}/create-trip-type`;
+export const createTripTypeApi = `${baseUri}${paymentBase}/create-t rip-type`;
 
 export const getTripTypeApi = `${baseUri}${paymentBase}trip-types`;
 export const createPaymentApi = `${baseUri}${paymentBase}create-trip-payment`;

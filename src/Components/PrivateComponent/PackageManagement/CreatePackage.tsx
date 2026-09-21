@@ -19,7 +19,6 @@ const CreatePackage = () => {
     const value = "Create Package";
     const navigation: any = useNavigation();
     const [loading, setLoading] = useState(false);
-    const [tokens, setTokens] = useState(null);
 
     const [createData, setCreateData] = useState<any>({
         name: "",
@@ -56,7 +55,7 @@ const CreatePackage = () => {
         return true;
     };
 
-    const handleCreatePackage = async (token: any, data: any) => {
+    const handleCreatePackage = async (data: any) => {
         if (!validatePackage()) return;
 
         setLoading(true);
@@ -69,7 +68,7 @@ const CreatePackage = () => {
         }
 
         try {
-            const res = await CreatePackageService(payload, token);
+            const res = await CreatePackageService(payload);
             const {data: {message = '', success = false}} = res;
             if(success){
                 showSuccess(message)
@@ -109,24 +108,6 @@ const CreatePackage = () => {
             description: updated.length ? updated : [""], // Keep at least one input
         });
     };
-
-    const userStoredData = async () => {
-        try {
-            const getDatas: any = await AsyncStorage.getItem("storeData");
-            const storeData = JSON.parse(getDatas);
-
-            const token = storeData?.token
-            if (token) {
-                setTokens(token);
-            }
-        } catch (error) {
-            showError(error);
-        }
-    }
-
-    useEffect(() => {
-        userStoredData()
-    }, [])
 
     return (
         <View style={{ flex: 1 }}>
@@ -297,7 +278,7 @@ const CreatePackage = () => {
                         </View>
 
                         <View style={{ marginTop: '10%', justifyContent: 'center', alignItems: 'center' }}>
-                            <TouchableOpacity onPress={() => handleCreatePackage(tokens, createData)} style={{ width: '70%', justifyContent: 'center', alignItems: 'center', backgroundColor: "green", padding: 10, borderRadius: 40 }}>
+                            <TouchableOpacity onPress={() => handleCreatePackage(createData)} style={{ width: '70%', justifyContent: 'center', alignItems: 'center', backgroundColor: "green", padding: 10, borderRadius: 40 }}>
                                 <Text style={{ color: "white", fontWeight: "bold", fontSize: 16 }}>Create Package</Text>
                             </TouchableOpacity>
                         </View>

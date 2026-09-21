@@ -19,7 +19,6 @@ const CreateFeedback = () => {
     const value = "Create Feedback";
     const navigation: any = useNavigation();
     const [loading, setLoading] = useState(false);
-    const [tokens, setTokens] = useState(null);
 
     const targetType = [
         { key: "User", value: 'user' },
@@ -50,7 +49,7 @@ const CreateFeedback = () => {
             sentiment: feedback?.sentiment
         }
         try {
-            const res = await CreateFeedbackService(payload, tokens);
+            const res = await CreateFeedbackService(payload);
             const { data: { success = false, message = "" } } = res;
 
             if(success === true){
@@ -65,24 +64,6 @@ const CreateFeedback = () => {
             setLoading(false)
         }
     }
-
-    const userStoredData = async () => {
-        try {
-            const getDatas: any = await AsyncStorage.getItem("storeData");
-            const storeData = JSON.parse(getDatas);
-
-            const token = storeData?.token
-            if (token) {
-                setTokens(token);
-            }
-        } catch (error) {
-            showError(error);
-        }
-    }
-
-    useEffect(() => {
-        userStoredData()
-    }, []);
 
     return (
         <View style={{ flex: 1 }}>

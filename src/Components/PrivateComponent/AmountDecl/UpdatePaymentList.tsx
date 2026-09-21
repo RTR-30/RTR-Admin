@@ -16,7 +16,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const UpdatePaymentList = () => {
     const value = "Update Payment";
     const navigation: any = useNavigation();
-    const [tokens, setTokens] = useState(null);
     const route = useRoute();
     const { TripDetails }: any = route.params || {};
     const [loading, setLoading] = useState<boolean>(false);
@@ -37,13 +36,12 @@ const UpdatePaymentList = () => {
 
     const handleDelete = async (ids: any) => {
         setLoading(true);
-        const token = tokens;
         try {
-            const res = await deletePaymentService(ids, token)
+            const res = await deletePaymentService(ids)
             const { success, message } = res?.data;
             if (success === true) {
                 showSuccess(message)
-                handleGetTripPayment(tokens);
+                handleGetTripPayment();
             } else {
                 showError(message)
             }
@@ -56,7 +54,6 @@ const UpdatePaymentList = () => {
 
     const handleUpdate = async () => {
         setLoading(true);
-        const token = tokens;
         const payload = {
             "tripTypeId": Number(selectedPayment.trip_type_id),
             "hours": Number(modalData?.hours),
@@ -64,13 +61,13 @@ const UpdatePaymentList = () => {
         }
 
         try {
-            const res = await updateTripPaymentService(selectedPayment, payload, token);
+            const res = await updateTripPaymentService(selectedPayment, payload);
 
             const { success, message, data } = res?.data;
 
             if (success === true) {
                 showSuccess(message);
-                handleGetTripPayment(tokens);
+                handleGetTripPayment();
                 setShowModal(false);
             } else {
                 showError(message);
@@ -82,12 +79,11 @@ const UpdatePaymentList = () => {
         }
     }
 
-    const handleGetTripPayment = async (tokens: any) => {
+    const handleGetTripPayment = async () => {
         setLoading(true);
-        const token = tokens;
 
         try {
-            const res = await getTripPaymentServices(token, TripDetails);
+            const res = await getTripPaymentServices(TripDetails);
             const { success, message, data } = res?.data;
 
             if (success === true) {
@@ -299,23 +295,8 @@ const UpdatePaymentList = () => {
         );
     };
 
-    const userStoredData = async () => {
-        try {
-            const getDatas: any = await AsyncStorage.getItem("storeData");
-            const storeData = JSON.parse(getDatas);
-            
-            const token = storeData?.token
-            if (token) {
-                setTokens(token);
-                handleGetTripPayment(token);
-            }
-        } catch (error) {
-            console.error("Error fetching user data from AsyncStorage:", error);
-        }
-    }
-
     useEffect(() => {
-        userStoredData();
+        handleGetTripPayment();
     }, [])
 
     return (

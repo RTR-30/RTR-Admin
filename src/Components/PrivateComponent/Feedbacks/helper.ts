@@ -1,34 +1,18 @@
-import axios from "axios";
 import { FeedbackApis } from "../../../../environment/apimanager";
+import { Delete, Get, Post, Put } from "../../../Common/HttpService";
 
-export const CreateFeedbackService = (payload: any, token: any) => {
-    return axios.post(`${FeedbackApis}`, payload, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        }
-    }) 
+export const CreateFeedbackService = (payload: any) => {
+    return Post(`${FeedbackApis}`, payload, "rtrToken") 
 }
 
-export const GetFeedbackService = (token: any) => {
-    return axios.get(`${FeedbackApis}`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        }
-    }) 
+export const GetFeedbackService = () => {
+    return Get(`${FeedbackApis}`, "rtrToken") 
 }
 
-export const UpdateFeedbackService = (id: any, payload: any, token: any) => {
-    return axios.put(`${FeedbackApis}/${id}`, payload, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        }
-    }) 
+export const UpdateFeedbackService = (id: any, payload: any) => {
+    return Put(`${FeedbackApis}/${id}`, payload, "rtrToken") 
 }
 
-export const DeleteFeedbackService = (id: any, token: any) => {
-    return axios.delete(`${FeedbackApis}/${id}`,{
-        headers: {
-            Authorization: `Bearer ${token}`,
-        }
-    }) 
+export const DeleteFeedbackService = (id: any) => {
+    return Delete(`${FeedbackApis}/${id}`, "rtrToken") 
 }

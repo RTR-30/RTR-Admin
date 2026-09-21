@@ -28,7 +28,6 @@ const PackageList = () => {
     const navigation: any = useNavigation();
 
     const [loading, setLoading] = useState(false);
-    const [tokens, setTokens] = useState<any>(null);
 
     const [updateShow, setUpdateShow] = useState(false);
     const [packageData, setPackageData] = useState<any[]>([]);
@@ -95,7 +94,7 @@ const PackageList = () => {
     // ==============================
     // UPDATE PACKAGE
     // ==============================
-    const UpdatePackageList = async (id: any, token: any) => {
+    const UpdatePackageList = async (id: any) => {
         if (!validatePackage()) return;
 
         setLoading(true);
@@ -111,8 +110,7 @@ const PackageList = () => {
         try {
             const res = await UpdatePackageService(
                 id,
-                payload,
-                token
+                payload
             );
 
             const {
@@ -125,7 +123,7 @@ const PackageList = () => {
             if (success === true) {
                 showSuccess(message);
                 closeUpdateShow();
-                fetchPackageList(token);
+                fetchPackageList();
             } else {
                 showError(message);
             }
@@ -140,16 +138,12 @@ const PackageList = () => {
     // DELETE PACKAGE
     // ==============================
     const DeletePackageList = async (
-        id: any,
-        usertoken: any
+        id: any
     ) => {
         setLoading(true);
 
         try {
-            const res = await DeletePackageService(
-                id,
-                usertoken
-            );
+            const res = await DeletePackageService(id);
 
             const {
                 data: {
@@ -160,7 +154,7 @@ const PackageList = () => {
 
             if (success === true) {
                 showSuccess(message);
-                fetchPackageList(usertoken);
+                fetchPackageList();
             } else {
                 showError(message);
             }
@@ -174,11 +168,11 @@ const PackageList = () => {
     // ==============================
     // FETCH PACKAGE LIST
     // ==============================
-    const fetchPackageList = async (usertoken: any) => {
+    const fetchPackageList = async () => {
         setLoading(true);
 
         try {
-            const res = await GetPackageListService(usertoken);
+            const res = await GetPackageListService();
 
             const {
                 data: {
@@ -213,30 +207,7 @@ const PackageList = () => {
             setLoading(false);
         }
     };
-
-    // ==============================
-    // GET TOKEN
-    // ==============================
-    const userStoredData = async () => {
-        try {
-            const getDatas: any =
-                await AsyncStorage.getItem("storeData");
-
-            if (!getDatas) return;
-
-            const storeData = JSON.parse(getDatas);
-
-            const token = storeData?.token;
-
-            if (token) {
-                setTokens(token);
-                fetchPackageList(token);
-            }
-        } catch (error: any) {
-            showError(error);
-        }
-    };
-
+    
     // ==============================
     // DESCRIPTION CHANGE
     // ==============================
@@ -245,15 +216,15 @@ const PackageList = () => {
         index: number
     ) => {
         const updated = [...updateData.description];
-
+        
         updated[index] = text;
-
+        
         setUpdateData({
             ...updateData,
             description: updated,
         });
     };
-
+    
     // ==============================
     // ADD DESCRIPTION
     // ==============================
@@ -266,25 +237,25 @@ const PackageList = () => {
             ],
         });
     };
-
+    
     // ==============================
     // REMOVE DESCRIPTION
     // ==============================
     const removeDescription = (index: number) => {
         const updated =
-            updateData.description.filter(
-                (_: any, i: number) => i !== index
-            );
-
+        updateData.description.filter(
+            (_: any, i: number) => i !== index
+        );
+        
         setUpdateData({
             ...updateData,
             description:
-                updated.length ? updated : [""],
+            updated.length ? updated : [""],
         });
     };
-
+    
     useEffect(() => {
-        userStoredData();
+        fetchPackageList();
     }, []);
 
     return (
@@ -561,10 +532,7 @@ const PackageList = () => {
                                         height: 45,
                                     }}
                                     onPress={() =>
-                                        DeletePackageList(
-                                            item.id,
-                                            tokens
-                                        )
+                                        DeletePackageList(item.id)
                                     }
                                 >
                                     <Text
@@ -992,10 +960,7 @@ const PackageList = () => {
 
                                     <TouchableOpacity
                                         onPress={() =>
-                                            UpdatePackageList(
-                                                selectedId,
-                                                tokens
-                                            )
+                                            UpdatePackageList(selectedId)
                                         }
                                         style={{
                                             backgroundColor:

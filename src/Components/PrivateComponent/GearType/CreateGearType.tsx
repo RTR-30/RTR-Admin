@@ -19,7 +19,6 @@ const CreateGearType = () => {
     const value = "Create Gear Type";
     const navigation: any = useNavigation();
     const [loading, setLoading] = useState(false);
-    const [tokens, setTokens] = useState(null);
     const [GearType, setGearType] = useState<any>({
         name: ''
     })
@@ -35,7 +34,7 @@ const CreateGearType = () => {
         }
 
         try {
-            const res = await CreateGearTypeService(payload, tokens);
+            const res = await CreateGearTypeService(payload);
             const { data: { message = '', success = false } } = res;
             if (success) {
                 showSuccess(message)
@@ -49,25 +48,7 @@ const CreateGearType = () => {
             setLoading(false)
         }
     }
-
-    const userStoredData = async () => {
-        try {
-            const getDatas: any = await AsyncStorage.getItem("storeData");
-            const storeData = JSON.parse(getDatas);
-
-            const token = storeData?.token
-            if (token) {
-                setTokens(token);
-            }
-        } catch (error) {
-            showError(error);
-        }
-    }
-
-    useEffect(() => {
-        userStoredData()
-    }, []);
-
+    
     return (
         <View style={{ flex: 1 }}>
             <View style={{ flex: 1 }}>

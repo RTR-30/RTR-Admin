@@ -18,7 +18,6 @@ const CreatePayment = () => {
     const value = "Create Payment";
     const navigation: any = useNavigation();
     const [loading, setLoading] = useState(false);
-    const [tokens, setTokens] = useState(null);
 
     const [tripTypes, setTripTypes] = useState([]);
     const [showDropdown, setShowDropdown] = useState(false);
@@ -29,11 +28,10 @@ const CreatePayment = () => {
         total_amount: ""
     })
 
-    const handleTripTypes = async (tokens: any) => {
+    const handleTripTypes = async () => {
         setLoading(true);
-        const token = tokens
         try {
-            const res = await getTripTypesServices(token);
+            const res = await getTripTypesServices();
             const { success, message, data } = res?.data;
 
             if (success === true) {
@@ -68,7 +66,7 @@ const CreatePayment = () => {
             return;
         }
         setLoading(true);
-        const token = tokens;
+
         const payload = {
             tripTypeId: Number(datas.trip_type_id),
             hours: Number(datas.hours),
@@ -76,7 +74,7 @@ const CreatePayment = () => {
         }
         
         try {
-            const res = await createTripPaymentService(payload, token);
+            const res = await createTripPaymentService(payload);
             
             const { success, message } = res?.data;
             if (success === true) {
@@ -92,23 +90,8 @@ const CreatePayment = () => {
         }
     }
 
-    const userStoredData = async () => {
-        try {
-            const getDatas: any = await AsyncStorage.getItem("storeData");
-            const storeData = JSON.parse(getDatas);
-            
-            const token = storeData?.token
-            if (token) {
-                setTokens(token);
-                handleTripTypes(token);
-            }
-        } catch (error) {
-            showError(error);
-        }
-    }
-
     useEffect(() => {
-        userStoredData();
+        handleTripTypes();
     }, []);
 
     return (
