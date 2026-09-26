@@ -6,15 +6,18 @@ import {
     StyleSheet,
     RefreshControl,
     FlatList,
-    TextInput
+    TextInput,
+    TouchableOpacity
 } from "react-native";
 import Header from "../../../Common/PageHeader";
 import { totalcardriverUser } from "./helperapi";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { showError } from "../../../Common/ToastMessage";
+import { useNavigation } from "@react-navigation/native";
 
 const TotalCarDriverList = () => {
     const value = "Car Driver";
+    const navigation: any = useNavigation();
     const [loader, setLoader] = useState<boolean>(false);
     const [onRefreshing, setOnRefreshing] = useState<boolean>(false);
     const [footerLoader, setFooterLoader] = useState<boolean>(false);
@@ -79,12 +82,19 @@ const TotalCarDriverList = () => {
         setSearchTimeout(timeout);
     };
 
+    const goToDetailsScreen = (item: any) => {
+        navigation.navigate("CarDriverDetails", { carDriver: item })
+    }
+
     const renderList = ({ item, index }: any) => {
         return (
             <View style={styles.itemContainer}>
-                <Text style={styles.nameText}>{item?.name}</Text>
-                <Text style={styles.detailText}>Email: {item?.email}</Text>
-                <Text style={styles.detailText}>Phone: {item?.mobileno}</Text>
+                <TouchableOpacity onPress={() => goToDetailsScreen(item)}>
+                    <Text style={styles.nameText}>{item?.id}</Text>
+                    <Text style={styles.detailText}>Name: {item?.name}</Text>
+                    <Text style={styles.detailText}>Email: {item?.email}</Text>
+                    <Text style={styles.detailText}>Phone: {item?.mobileno}</Text>
+                </TouchableOpacity>
             </View>
         );
     };

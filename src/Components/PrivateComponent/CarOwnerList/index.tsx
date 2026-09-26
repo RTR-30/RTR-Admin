@@ -7,14 +7,17 @@ import {
     StyleSheet,
     TextInput,
     RefreshControl,
+    TouchableOpacity,
 } from "react-native";
 import Header from "../../../Common/PageHeader";
 import { totalcarownerUser } from "./helperapi";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { showError } from "../../../Common/ToastMessage";
+import { useNavigation } from "@react-navigation/native";
 
 const TotalCarOwnerList = () => {
     const value = "Car Owner";
+    const navigation: any = useNavigation();
     const [loader, setLoader] = useState<boolean>(false);
     const [onRefreshing, setOnRefreshing] = useState<boolean>(false);
     const [footerLoader, setFooterLoader] = useState<boolean>(false);
@@ -34,7 +37,7 @@ const TotalCarOwnerList = () => {
         }
         try {
             const res = await totalcarownerUser(value, limit, page);
-            
+
             setTotalCount(res?.data?.pagination?.total);
             setTotalCarOwner(res?.data?.data || []);
         } catch (error) {
@@ -80,12 +83,19 @@ const TotalCarOwnerList = () => {
         setSearchTimeout(timeout);
     };
 
+    const goToDetailsScreen = (item: any) => {
+        navigation.navigate("CarOwnerDetails", {carOwner: item})
+    }
+
     const renderList = ({ item, index }: any) => {
         return (
             <View style={styles.itemContainer}>
-                <Text style={styles.nameText}>{item?.Name}</Text>
-                <Text style={styles.detailText}>Email: {item?.Email}</Text>
-                <Text style={styles.detailText}>Phone: {item?.MobileNo}</Text>
+                <TouchableOpacity onPress={() => goToDetailsScreen(item)}>
+                    <Text style={styles.nameText}>{item?.Id}</Text>
+                    <Text style={styles.detailText}>Name: {item?.Name}</Text>
+                    <Text style={styles.detailText}>Email: {item?.Email}</Text>
+                    <Text style={styles.detailText}>Phone: {item?.MobileNo}</Text>
+                </TouchableOpacity>
             </View>
         );
     };

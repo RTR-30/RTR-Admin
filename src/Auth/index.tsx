@@ -25,6 +25,8 @@ import CreateFeedback from "../Components/PrivateComponent/Feedbacks/CreateFeedb
 import FeedbackList from "../Components/PrivateComponent/Feedbacks/FeedbackList";
 import Withdrawal from "../Components/PrivateComponent/Withdraws";
 import AppVersionControl from "../Components/PrivateComponent/AppVersionControl";
+import CarDriverDetails from "../Components/PrivateComponent/CarDriverList/CarDriverDetails";
+import CarOwnerDetails from "../Components/PrivateComponent/CarOwnerList/CarOwnerDetails";
 
 const Stack = createNativeStackNavigator();
 
@@ -58,6 +60,8 @@ const NavigationPage = () => {
                 <Stack.Screen name="FeedbackList" component={FeedbackList}/>
                 <Stack.Screen name="Withdrawal" component={Withdrawal}/>
                 <Stack.Screen name="AppVersionControl" component={AppVersionControl}/>
+                <Stack.Screen name="CarOwnerDetails" component={CarOwnerDetails}/>
+                <Stack.Screen name="CarDriverDetails" component={CarDriverDetails}/>
             </Stack.Navigator>
         </NavigationContainer>
     );

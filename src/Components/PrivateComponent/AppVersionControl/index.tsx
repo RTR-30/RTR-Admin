@@ -83,7 +83,6 @@ const AppVersionControl = () => {
             };
 
             const res = await updateAppVersionServices(payload, item.id);
-            console.log(res?.data);
             const { data: { success = false, message = "" } } = res;
             
             if (success) {

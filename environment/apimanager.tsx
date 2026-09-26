@@ -1,5 +1,5 @@
 // const baseUri = "http://10.0.2.2:8000/";
-const baseUri = "http://10.47.98.206:8000/";
+const baseUri = "http://10.211.21.206:8000/";
 
 const base = "admin/";
 const paymentBase = "payment/";
