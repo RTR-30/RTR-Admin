@@ -7,69 +7,51 @@ import {
     TouchableOpacity,
     Modal,
     TextInput,
+    ActivityIndicator,
 } from "react-native";
 import DatePicker from "react-native-date-picker";
 import { useRoute } from "@react-navigation/native";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 import Header from "../../../Common/PageHeader";
-import { COLORS } from "../../../utils/ColorCode";
+import { COLORS, SHADOWS } from "../../../utils/ColorCode";
 import { showError, showSuccess } from "../../../Common/ToastMessage";
 import { updateUserStatusService } from "./helperapi";
 
 const CarOwnerDetails = () => {
-    const value = "User Details";
-
+    const value = "Car Owner Details";
     const route = useRoute<any>();
-    const { carOwner } = route.params;
+    const { carOwner } = route.params || {};
 
     const [loader, setLoader] = useState<boolean>(false);
+    const [modalVisible, setModalVisible] = useState<boolean>(false);
+    const [datePickerOpen, setDatePickerOpen] = useState<boolean>(false);
+    const [modalType, setModalType] = useState<"SUSPEND" | "BLOCK">("SUSPEND");
 
-    const [modalVisible, setModalVisible] =
-        useState<boolean>(false);
-
-    const [datePickerOpen, setDatePickerOpen] =
-        useState<boolean>(false);
-
-    const [modalType, setModalType] =
-        useState<"SUSPEND" | "BLOCK">("SUSPEND");
-
-    const [userInput, setUserInput] = useState<any>({
+    const [userInput, setUserInput] = useState<{
+        status: string;
+        suspended_until: string;
+        reason: string;
+    }>({
         status: "",
         suspended_until: "",
         reason: "",
     });
 
-    // ----------------------------------------
-    // OPEN SUSPEND / BLOCK MODAL
-    // ----------------------------------------
-    const openStatusModal = (
-        type: "SUSPEND" | "BLOCK"
-    ) => {
+    const openStatusModal = (type: "SUSPEND" | "BLOCK") => {
         setModalType(type);
-
         setUserInput({
-            status:
-                type === "SUSPEND"
-                    ? "SUSPENDED"
-                    : "BLOCKED",
+            status: type === "SUSPEND" ? "SUSPENDED" : "BLOCKED",
             suspended_until: "",
             reason: "",
         });
-
         setModalVisible(true);
     };
 
-    // ----------------------------------------
-    // CLOSE MODAL
-    // ----------------------------------------
     const closeModal = () => {
-        if (loader) {
-            return;
-        }
-
+        if (loader) return;
         setModalVisible(false);
         setDatePickerOpen(false);
-
         setUserInput({
             status: "",
             suspended_until: "",
@@ -77,50 +59,35 @@ const CarOwnerDetails = () => {
         });
     };
 
-    // ----------------------------------------
-    // DATE FORMAT FOR DISPLAY
-    // ----------------------------------------
     const formatDisplayDate = (dateString: string) => {
-        if (!dateString) {
-            return "Select Date";
-        }
-
+        if (!dateString) return "Select Date";
         const date = new Date(dateString);
-
         return date.toLocaleDateString("en-GB", {
             day: "2-digit",
-            month: "2-digit",
+            month: "short",
             year: "numeric",
         });
     };
 
-    // ----------------------------------------
-    // SUBMIT STATUS
-    // ----------------------------------------
     const handleUpdateStatus = async () => {
         if (!userInput.reason.trim()) {
-            showError("Please enter reason");
+            showError("Please enter a reason");
             return;
         }
 
-        if (
-            modalType === "SUSPEND" &&
-            !userInput.suspended_until
-        ) {
-            showError("Please select suspended date");
+        if (modalType === "SUSPEND" && !userInput.suspended_until) {
+            showError("Please select suspended until date");
             return;
         }
 
         try {
             setLoader(true);
-
             let payload: any = {};
 
             if (modalType === "SUSPEND") {
                 payload = {
                     status: "SUSPENDED",
-                    suspended_until:
-                        userInput.suspended_until,
+                    suspended_until: userInput.suspended_until,
                     reason: userInput.reason.trim(),
                 };
             } else {
@@ -130,351 +97,261 @@ const CarOwnerDetails = () => {
                 };
             }
 
-            const response =
-                await updateUserStatusService(
-                    carOwner?.Id,
-                    payload
-                );
+            const response = await updateUserStatusService(carOwner?.Id, payload);
 
-            if (
-                response?.status === 200 ||
-                response?.status === 201
-            ) {
+            if (response?.status === 200 || response?.status === 201) {
                 showSuccess(
                     modalType === "SUSPEND"
                         ? "User suspended successfully"
                         : "User blocked successfully"
                 );
-
                 closeModal();
             } else {
-                showError(
-                    response?.data?.message ||
-                    "Unable to update user status"
-                );
+                showError("Failed to update status");
             }
-        } catch (error) {
-            showError(
-                "Unable to update user status"
-            );
+        } catch (error: any) {
+            showError(error?.message || "Something went wrong");
         } finally {
             setLoader(false);
         }
     };
 
+    const initials = (carOwner?.Name || "O")
+        .split(" ")
+        .map((n: string) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase();
+
     return (
         <View style={styles.container}>
+            <Header value={value} subtitle="Account & Profile Administration" />
 
-            {/* HEADER */}
-            <View style={styles.header}>
-                <Header value={value} />
-            </View>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.scrollContent}
+            >
+                {/* Hero Profile Card */}
+                <View style={styles.heroCard}>
+                    <View style={styles.avatarCircle}>
+                        <Text style={styles.avatarText}>{initials}</Text>
+                    </View>
+                    <Text style={styles.heroName}>{carOwner?.Name || "Unnamed Owner"}</Text>
+                    <View style={styles.heroBadgesRow}>
+                        <View style={styles.idBadge}>
+                            <Text style={styles.idBadgeText}>Owner ID: #{carOwner?.Id ?? "-"}</Text>
+                        </View>
+                        <View style={styles.roleBadge}>
+                            <Text style={styles.roleBadgeText}>Vehicle Owner</Text>
+                        </View>
+                    </View>
+                </View>
 
-            {/* CONTENT */}
-            <View style={styles.content}>
+                {/* Contact Information */}
+                <View style={styles.sectionCard}>
+                    <Text style={styles.sectionTitle}>Contact Details</Text>
 
-                <ScrollView
-                    showsVerticalScrollIndicator={false}
-                >
+                    <View style={styles.infoRow}>
+                        <View style={[styles.infoIconWrapper, { backgroundColor: "#DBEAFE" }]}>
+                            <Ionicons name="call" size={16} color="#2563EB" />
+                        </View>
+                        <View style={styles.infoTextContainer}>
+                            <Text style={styles.infoLabel}>Phone Number</Text>
+                            <Text style={styles.infoValue}>{carOwner?.MobileNo || "Not provided"}</Text>
+                        </View>
+                    </View>
 
-                    <Text style={styles.title}>
-                        Basic Details
+                    <View style={styles.divider} />
+
+                    <View style={styles.infoRow}>
+                        <View style={[styles.infoIconWrapper, { backgroundColor: "#F3E8FF" }]}>
+                            <Ionicons name="mail" size={16} color="#9333EA" />
+                        </View>
+                        <View style={styles.infoTextContainer}>
+                            <Text style={styles.infoLabel}>Email Address</Text>
+                            <Text style={styles.infoValue}>{carOwner?.Email || "Not provided"}</Text>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Location & Field */}
+                <View style={styles.sectionCard}>
+                    <Text style={styles.sectionTitle}>Address & Information</Text>
+
+                    <View style={styles.infoRow}>
+                        <View style={[styles.infoIconWrapper, { backgroundColor: "#DCFCE7" }]}>
+                            <Ionicons name="location" size={16} color="#16A34A" />
+                        </View>
+                        <View style={styles.infoTextContainer}>
+                            <Text style={styles.infoLabel}>Registered Address</Text>
+                            <Text style={styles.infoValue}>{carOwner?.Address || "Not provided"}</Text>
+                        </View>
+                    </View>
+
+                    {carOwner?.Field ? (
+                        <>
+                            <View style={styles.divider} />
+                            <View style={styles.infoRow}>
+                                <View style={[styles.infoIconWrapper, { backgroundColor: "#FEF3C7" }]}>
+                                    <Ionicons name="briefcase" size={16} color="#D97706" />
+                                </View>
+                                <View style={styles.infoTextContainer}>
+                                    <Text style={styles.infoLabel}>Field / Industry</Text>
+                                    <Text style={styles.infoValue}>{carOwner.Field}</Text>
+                                </View>
+                            </View>
+                        </>
+                    ) : null}
+                </View>
+
+                {/* Account Actions */}
+                <View style={styles.actionsCard}>
+                    <Text style={styles.sectionTitle}>Administrative Actions</Text>
+                    <Text style={styles.actionsSubtitle}>
+                        Restrict platform access if terms of service or guidelines are violated
                     </Text>
 
-                    {/* USER DETAILS CARD */}
-                    <View style={styles.card}>
-
-                        {/* ID + NAME */}
-                        <View style={styles.row}>
-
-                            <View style={styles.column}>
-                                <Text style={styles.label}>
-                                    ID
-                                </Text>
-
-                                <Text style={styles.value}>
-                                    {carOwner?.Id || "-"}
-                                </Text>
-                            </View>
-
-                            <View style={styles.column}>
-                                <Text style={styles.label}>
-                                    Name
-                                </Text>
-
-                                <Text style={styles.value}>
-                                    {carOwner?.Name || "-"}
-                                </Text>
-                            </View>
-
-                        </View>
-
-                        {/* EMAIL + PHONE */}
-                        <View style={styles.row}>
-
-                            <View style={styles.column}>
-                                <Text style={styles.label}>
-                                    Email
-                                </Text>
-
-                                <Text style={styles.value}>
-                                    {carOwner?.Email || "-"}
-                                </Text>
-                            </View>
-
-                            <View style={styles.column}>
-                                <Text style={styles.label}>
-                                    Phone
-                                </Text>
-
-                                <Text style={styles.value}>
-                                    {carOwner?.MobileNo || "-"}
-                                </Text>
-                            </View>
-
-                        </View>
-
-                        {/* ADDRESS + FIELD */}
-                        <View style={styles.row}>
-
-                            <View style={styles.column}>
-                                <Text style={styles.label}>
-                                    Address
-                                </Text>
-
-                                <Text style={styles.value}>
-                                    {carOwner?.Address || "-"}
-                                </Text>
-                            </View>
-
-                            <View style={styles.column}>
-                                <Text style={styles.label}>
-                                    Field
-                                </Text>
-
-                                <Text style={styles.value}>
-                                    {carOwner?.Field || "-"}
-                                </Text>
-                            </View>
-
-                        </View>
-
-                    </View>
-
-                    {/* STATUS BUTTONS */}
                     <View style={styles.buttonContainer}>
-
-                        {/* SUSPEND */}
                         <TouchableOpacity
-                            style={styles.button}
-                            onPress={() =>
-                                openStatusModal("SUSPEND")
-                            }
+                            style={styles.suspendButton}
+                            onPress={() => openStatusModal("SUSPEND")}
+                            activeOpacity={0.8}
                         >
-                            <Text style={styles.buttonText}>
-                                SUSPEND
-                            </Text>
+                            <Ionicons name="pause-circle-outline" size={18} color="#D97706" style={{ marginRight: 6 }} />
+                            <Text style={styles.suspendButtonText}>Suspend Account</Text>
                         </TouchableOpacity>
 
-                        {/* BLOCK */}
                         <TouchableOpacity
-                            style={styles.button}
-                            onPress={() =>
-                                openStatusModal("BLOCK")
-                            }
+                            style={styles.blockButton}
+                            onPress={() => openStatusModal("BLOCK")}
+                            activeOpacity={0.8}
                         >
-                            <Text style={styles.buttonText}>
-                                BLOCK
-                            </Text>
+                            <Ionicons name="ban-outline" size={18} color="#DC2626" style={{ marginRight: 6 }} />
+                            <Text style={styles.blockButtonText}>Block Account</Text>
                         </TouchableOpacity>
-
                     </View>
+                </View>
+            </ScrollView>
 
-                </ScrollView>
-
-            </View>
-
-            {/* -------------------------------- */}
-            {/* STATUS MODAL */}
-            {/* -------------------------------- */}
-
+            {/* Status Modal */}
             <Modal
                 visible={modalVisible}
                 transparent={true}
                 animationType="fade"
                 onRequestClose={closeModal}
             >
-
-                <View style={styles.modalOverlay}>
-
-                    <View style={styles.modalContainer}>
-
-                        {/* TITLE */}
-                        <Text style={styles.modalTitle}>
-                            {modalType === "SUSPEND"
-                                ? "Suspend User"
-                                : "Block User"}
-                        </Text>
-
-                        {/* STATUS */}
-                        <Text style={styles.inputLabel}>
-                            Status
-                        </Text>
-
-                        <View style={styles.statusBox}>
-
-                            <Text style={styles.statusText}>
-                                {userInput.status}
-                            </Text>
-
+                <View style={styles.modalBackdrop}>
+                    <View style={styles.modalCard}>
+                        <View style={styles.modalHeader}>
+                            <View style={styles.modalTitleRow}>
+                                <Ionicons
+                                    name={modalType === "SUSPEND" ? "pause-circle" : "ban"}
+                                    size={22}
+                                    color={modalType === "SUSPEND" ? "#D97706" : "#DC2626"}
+                                    style={{ marginRight: 8 }}
+                                />
+                                <Text style={styles.modalTitle}>
+                                    {modalType === "SUSPEND" ? "Suspend Car Owner" : "Block Car Owner"}
+                                </Text>
+                            </View>
+                            <TouchableOpacity onPress={closeModal} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                                <Ionicons name="close" size={22} color="#64748B" />
+                            </TouchableOpacity>
                         </View>
 
-                        {/* -------------------------------- */}
-                        {/* SUSPENDED DATE */}
-                        {/* ONLY SHOW FOR SUSPEND */}
-                        {/* -------------------------------- */}
-
-                        {modalType === "SUSPEND" && (
-                            <>
-                                <Text style={styles.inputLabel}>
-                                    Suspended Until
-                                </Text>
-
-                                <TouchableOpacity
-                                    style={styles.dateInput}
-                                    onPress={() =>
-                                        setDatePickerOpen(true)
-                                    }
-                                >
-
-                                    <Text
-                                        style={[
-                                            styles.dateText,
-                                            !userInput.suspended_until &&
-                                            styles.placeholderText,
-                                        ]}
-                                    >
-                                        {formatDisplayDate(
-                                            userInput.suspended_until
-                                        )}
-                                    </Text>
-
-                                </TouchableOpacity>
-
-                                {/* DATE PICKER */}
-                                <DatePicker
-                                    modal
-                                    open={datePickerOpen}
-                                    date={
-                                        userInput.suspended_until
-                                            ? new Date(
-                                                userInput.suspended_until
-                                            )
-                                            : new Date()
-                                    }
-                                    mode="date"
-                                    minimumDate={new Date()}
-                                    onConfirm={(
-                                        selectedDate
-                                    ) => {
-
-                                        setDatePickerOpen(false);
-
-                                        const isoDate =
-                                            selectedDate.toISOString();
-
-                                        setUserInput(
-                                            (
-                                                previous: any
-                                            ) => ({
-                                                ...previous,
-                                                suspended_until:
-                                                    isoDate,
-                                            })
-                                        );
-                                    }}
-                                    onCancel={() => {
-                                        setDatePickerOpen(false);
-                                    }}
-                                />
-                            </>
-                        )}
-
-                        {/* REASON */}
-                        <Text style={styles.inputLabel}>
-                            Reason
+                        <Text style={styles.modalSubtitle}>
+                            {modalType === "SUSPEND"
+                                ? "Temporarily halt booking and vehicle listings until a specified date."
+                                : "Permanently restrict this user from logging in and accessing platform services."}
                         </Text>
 
+                        {/* Date Picker Button if Suspend */}
+                        {modalType === "SUSPEND" && (
+                            <View style={{ marginBottom: 14 }}>
+                                <Text style={styles.modalInputLabel}>Suspended Until Date</Text>
+                                <TouchableOpacity
+                                    style={styles.datePickerButton}
+                                    onPress={() => setDatePickerOpen(true)}
+                                    activeOpacity={0.8}
+                                >
+                                    <Ionicons name="calendar-outline" size={18} color="#64748B" style={{ marginRight: 8 }} />
+                                    <Text
+                                        style={[
+                                            styles.datePickerText,
+                                            userInput.suspended_until ? styles.datePickerTextActive : null,
+                                        ]}
+                                    >
+                                        {formatDisplayDate(userInput.suspended_until)}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+
+                        {/* Reason Input */}
+                        <Text style={styles.modalInputLabel}>Enforcement Reason</Text>
                         <TextInput
-                            style={[
-                                styles.input,
-                                styles.reasonInput,
-                            ]}
-                            placeholder="Enter reason"
-                            placeholderTextColor="#999"
+                            placeholder="Enter detailed reason for suspension or block..."
+                            placeholderTextColor="#94A3B8"
                             multiline
                             value={userInput.reason}
-                            onChangeText={(text) =>
-                                setUserInput(
-                                    (
-                                        previous: any
-                                    ) => ({
-                                        ...previous,
-                                        reason: text,
-                                    })
-                                )
-                            }
+                            onChangeText={(text) => setUserInput({ ...userInput, reason: text })}
+                            style={styles.reasonInput}
                         />
 
-                        {/* MODAL BUTTONS */}
-                        <View style={styles.modalButtons}>
-
-                            {/* CANCEL */}
+                        {/* Actions */}
+                        <View style={styles.modalActionsRow}>
                             <TouchableOpacity
-                                style={
-                                    styles.cancelButton
-                                }
+                                style={styles.modalCancelButton}
                                 onPress={closeModal}
                                 disabled={loader}
                             >
-                                <Text
-                                    style={
-                                        styles.cancelText
-                                    }
-                                >
-                                    CANCEL
-                                </Text>
+                                <Text style={styles.modalCancelText}>Cancel</Text>
                             </TouchableOpacity>
 
-                            {/* SUBMIT */}
                             <TouchableOpacity
-                                style={
-                                    styles.submitButton
-                                }
-                                onPress={
-                                    handleUpdateStatus
-                                }
+                                style={[
+                                    styles.modalConfirmButton,
+                                    { backgroundColor: modalType === "SUSPEND" ? "#D97706" : "#DC2626" },
+                                    loader && styles.modalConfirmButtonDisabled,
+                                ]}
+                                onPress={handleUpdateStatus}
                                 disabled={loader}
                             >
-                                <Text
-                                    style={
-                                        styles.submitText
-                                    }
-                                >
-                                    {loader
-                                        ? "UPDATING..."
-                                        : "SUBMIT"}
-                                </Text>
+                                {loader ? (
+                                    <ActivityIndicator size="small" color="#FFFFFF" />
+                                ) : (
+                                    <Text style={styles.modalConfirmText}>
+                                        {modalType === "SUSPEND" ? "Confirm Suspension" : "Confirm Block"}
+                                    </Text>
+                                )}
                             </TouchableOpacity>
-
                         </View>
-
                     </View>
-
                 </View>
-
             </Modal>
 
+            {/* Date Picker Component */}
+            <DatePicker
+                modal
+                open={datePickerOpen}
+                date={
+                    userInput.suspended_until
+                        ? new Date(userInput.suspended_until)
+                        : new Date()
+                }
+                mode="date"
+                minimumDate={new Date()}
+                onConfirm={(date) => {
+                    setDatePickerOpen(false);
+                    setUserInput({
+                        ...userInput,
+                        suspended_until: date.toISOString(),
+                    });
+                }}
+                onCancel={() => {
+                    setDatePickerOpen(false);
+                }}
+            />
         </View>
     );
 };
@@ -482,207 +359,271 @@ const CarOwnerDetails = () => {
 export default CarOwnerDetails;
 
 const styles = StyleSheet.create({
-
     container: {
         flex: 1,
-        backgroundColor: "#fff",
+        backgroundColor: COLORS.background,
     },
-
-    header: {
-        flex: 1,
+    scrollContent: {
+        padding: 16,
+        paddingBottom: 40,
     },
-
-    content: {
-        flex: 9,
-        padding: 10,
+    heroCard: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: 20,
+        padding: 22,
+        alignItems: "center",
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        ...SHADOWS.sm,
     },
-
-    title: {
-        color: "#000",
+    avatarCircle: {
+        width: 68,
+        height: 68,
+        borderRadius: 22,
+        backgroundColor: "#E0F2FE",
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 12,
+    },
+    avatarText: {
+        fontSize: 24,
+        fontWeight: "800",
+        color: "#0369A1",
+    },
+    heroName: {
+        fontSize: 18,
+        fontWeight: "800",
+        color: COLORS.textMain,
+        marginBottom: 8,
         textAlign: "center",
-        fontSize: 14,
-        fontWeight: "bold",
-        marginBottom: 15,
     },
-
-    card: {
-        width: "100%",
-        backgroundColor: "#f5f5f5",
-        padding: 15,
-        borderRadius: 10,
-        elevation: 2,
-    },
-
-    row: {
+    heroBadgesRow: {
         flexDirection: "row",
-        width: "100%",
-        marginBottom: 15,
+        gap: 8,
     },
-
-    column: {
-        width: "50%",
-        paddingHorizontal: 5,
+    idBadge: {
+        backgroundColor: "#F1F5F9",
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 8,
     },
-
-    label: {
+    idBadgeText: {
         fontSize: 12,
-        color: "#777",
-        marginBottom: 4,
+        fontWeight: "700",
+        color: "#475569",
     },
-
-    value: {
+    roleBadge: {
+        backgroundColor: "#FEE2E2",
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 8,
+    },
+    roleBadgeText: {
         fontSize: 12,
+        fontWeight: "700",
         color: COLORS.primary,
-        fontWeight: "500",
     },
-
-    buttonContainer: {
-        width: "100%",
+    sectionCard: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: 18,
+        padding: 18,
+        marginBottom: 14,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        ...SHADOWS.sm,
+    },
+    sectionTitle: {
+        fontSize: 14,
+        fontWeight: "800",
+        color: COLORS.textMain,
+        marginBottom: 14,
+        letterSpacing: 0.2,
+    },
+    infoRow: {
         flexDirection: "row",
-        justifyContent: "space-around",
-        marginTop: 30,
-    },
-
-    button: {
-        padding: 10,
-        backgroundColor: "black",
-        width: "40%",
-        justifyContent: "center",
         alignItems: "center",
+    },
+    infoIconWrapper: {
+        width: 36,
+        height: 36,
         borderRadius: 10,
+        alignItems: "center",
+        justifyContent: "center",
+        marginRight: 12,
     },
-
-    buttonText: {
-        fontSize: 12,
-        fontWeight: "bold",
-        color: "white",
-        textAlign: "center",
-    },
-
-    // -----------------------------
-    // MODAL
-    // -----------------------------
-
-    modalOverlay: {
+    infoTextContainer: {
         flex: 1,
-        backgroundColor: "rgba(0,0,0,0.5)",
+    },
+    infoLabel: {
+        fontSize: 11,
+        color: COLORS.textMuted,
+        fontWeight: "600",
+        marginBottom: 2,
+    },
+    infoValue: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: COLORS.textMain,
+    },
+    divider: {
+        height: 1,
+        backgroundColor: COLORS.borderLight,
+        marginVertical: 12,
+    },
+    actionsCard: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: 18,
+        padding: 18,
+        marginBottom: 14,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        ...SHADOWS.sm,
+    },
+    actionsSubtitle: {
+        fontSize: 12,
+        color: COLORS.textSecondary,
+        marginBottom: 16,
+        lineHeight: 16,
+    },
+    buttonContainer: {
+        flexDirection: "row",
+        gap: 12,
+    },
+    suspendButton: {
+        flex: 1,
+        height: 46,
+        borderRadius: 12,
+        backgroundColor: "#FEF3C7",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        borderWidth: 1,
+        borderColor: "#FDE68A",
+    },
+    suspendButtonText: {
+        fontSize: 13,
+        fontWeight: "700",
+        color: "#92400E",
+    },
+    blockButton: {
+        flex: 1,
+        height: 46,
+        borderRadius: 12,
+        backgroundColor: "#FEE2E2",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        borderWidth: 1,
+        borderColor: "#FECACA",
+    },
+    blockButtonText: {
+        fontSize: 13,
+        fontWeight: "700",
+        color: "#991B1B",
+    },
+    modalBackdrop: {
+        flex: 1,
+        backgroundColor: "rgba(15, 23, 42, 0.6)",
         justifyContent: "center",
         alignItems: "center",
         padding: 20,
     },
-
-    modalContainer: {
-        width: "90%",
-        backgroundColor: "#fff",
-        borderRadius: 12,
+    modalCard: {
+        width: "100%",
+        backgroundColor: "#FFFFFF",
+        borderRadius: 20,
         padding: 20,
-        elevation: 5,
+        ...SHADOWS.lg,
     },
-
+    modalHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 8,
+    },
+    modalTitleRow: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
     modalTitle: {
-        fontSize: 16,
-        fontWeight: "bold",
-        color: "#000",
-        textAlign: "center",
-        marginBottom: 20,
+        fontSize: 17,
+        fontWeight: "800",
+        color: COLORS.textMain,
     },
-
-    inputLabel: {
+    modalSubtitle: {
         fontSize: 12,
-        fontWeight: "600",
-        color: "#555",
+        color: COLORS.textSecondary,
+        marginBottom: 16,
+        lineHeight: 16,
+    },
+    modalInputLabel: {
+        fontSize: 12,
+        fontWeight: "700",
+        color: COLORS.textMain,
         marginBottom: 6,
     },
-
-    statusBox: {
-        height: 45,
-        borderWidth: 1,
-        borderColor: "#ddd",
-        borderRadius: 8,
-        justifyContent: "center",
+    datePickerButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        height: 46,
+        borderWidth: 1.5,
+        borderColor: COLORS.border,
+        borderRadius: 12,
         paddingHorizontal: 12,
-        marginBottom: 15,
-        backgroundColor: "#f5f5f5",
+        backgroundColor: "#F8FAFC",
     },
-
-    statusText: {
-        fontSize: 13,
-        color: COLORS.primary,
+    datePickerText: {
+        fontSize: 14,
+        color: "#94A3B8",
+    },
+    datePickerTextActive: {
+        color: COLORS.textMain,
         fontWeight: "600",
     },
-
-    dateInput: {
-        height: 45,
-        borderWidth: 1,
-        borderColor: "#ddd",
-        borderRadius: 8,
-        justifyContent: "center",
-        paddingHorizontal: 12,
-        marginBottom: 15,
-        backgroundColor: "#fff",
-    },
-
-    dateText: {
-        fontSize: 13,
-        color: "#000",
-    },
-
-    placeholderText: {
-        color: "#999",
-    },
-
-    input: {
-        height: 45,
-        borderWidth: 1,
-        borderColor: "#ddd",
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        fontSize: 13,
-        color: "#000",
-        marginBottom: 15,
-    },
-
     reasonInput: {
-        height: 80,
+        minHeight: 80,
+        borderWidth: 1.5,
+        borderColor: COLORS.border,
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        fontSize: 14,
+        color: COLORS.textMain,
+        backgroundColor: "#F8FAFC",
         textAlignVertical: "top",
-        paddingTop: 10,
+        marginBottom: 18,
     },
-
-    modalButtons: {
+    modalActionsRow: {
         flexDirection: "row",
-        justifyContent: "space-between",
-        marginTop: 5,
+        gap: 12,
     },
-
-    cancelButton: {
-        width: "45%",
-        height: 45,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: "#999",
-        justifyContent: "center",
+    modalCancelButton: {
+        flex: 1,
+        height: 46,
+        borderRadius: 12,
+        backgroundColor: "#F1F5F9",
         alignItems: "center",
-    },
-
-    cancelText: {
-        color: "#555",
-        fontSize: 12,
-        fontWeight: "bold",
-    },
-
-    submitButton: {
-        width: "45%",
-        height: 45,
-        borderRadius: 8,
-        backgroundColor: "black",
         justifyContent: "center",
+    },
+    modalCancelText: {
+        fontSize: 14,
+        fontWeight: "700",
+        color: "#64748B",
+    },
+    modalConfirmButton: {
+        flex: 1.5,
+        height: 46,
+        borderRadius: 12,
         alignItems: "center",
+        justifyContent: "center",
     },
-
-    submitText: {
-        color: "#fff",
-        fontSize: 12,
-        fontWeight: "bold",
+    modalConfirmButtonDisabled: {
+        opacity: 0.7,
     },
-
+    modalConfirmText: {
+        fontSize: 14,
+        fontWeight: "700",
+        color: "#FFFFFF",
+    },
 });

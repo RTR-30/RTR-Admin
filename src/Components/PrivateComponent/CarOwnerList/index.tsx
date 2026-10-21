@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     View,
     Text,
@@ -9,39 +9,42 @@ import {
     RefreshControl,
     TouchableOpacity,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import Ionicons from "react-native-vector-icons/Ionicons";
+
 import Header from "../../../Common/PageHeader";
 import { totalcarownerUser } from "./helperapi";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { showError } from "../../../Common/ToastMessage";
-import { useNavigation } from "@react-navigation/native";
+import { COLORS, SHADOWS } from "../../../utils/ColorCode";
 
 const TotalCarOwnerList = () => {
-    const value = "Car Owner";
+    const value = "Car Owners";
     const navigation: any = useNavigation();
+
     const [loader, setLoader] = useState<boolean>(false);
     const [onRefreshing, setOnRefreshing] = useState<boolean>(false);
     const [footerLoader, setFooterLoader] = useState<boolean>(false);
 
-    const [currentPageLimit, setCurrentPageLimit] = useState<any>(10);
+    const [currentPageLimit, setCurrentPageLimit] = useState<number>(10);
     const [totalCarOwner, setTotalCarOwner] = useState<any[]>([]);
-    const [totalCount, setTotalCount] = useState<any>(null);
-    const [search, setSearch] = useState<any>(null);
-    const [searchTimeout, setSearchTimeout] = useState<any>(null);
+    const [totalCount, setTotalCount] = useState<number | null>(null);
+    const [search, setSearch] = useState<string>("");
+    const searchTimeout = useRef<any>(null);
 
-    const handleCarOwner = async (value?: any, limit?: any, page?: any) => {
-
-        if (footerLoader) {
-            setLoader(false);
-        } else {
+    const handleCarOwner = async (searchTerm = search, limit = currentPageLimit, page = 1) => {
+        if (!footerLoader && !onRefreshing) {
             setLoader(true);
         }
-        try {
-            const res = await totalcarownerUser(value, limit, page);
 
-            setTotalCount(res?.data?.pagination?.total);
-            setTotalCarOwner(res?.data?.data || []);
+        try {
+            const res = await totalcarownerUser(searchTerm, limit, page);
+            const items = res?.data?.data || [];
+            const count = res?.data?.pagination?.total ?? items.length;
+
+            setTotalCount(count);
+            setTotalCarOwner(items);
         } catch (error) {
-            showError(error);
+            showError("Failed to fetch car owners");
         } finally {
             setLoader(false);
             setOnRefreshing(false);
@@ -51,136 +54,189 @@ const TotalCarOwnerList = () => {
 
     const onRefresh = () => {
         setOnRefreshing(true);
-        setLoader(false);
-        setFooterLoader(false);
-        setTotalCount(null);
-        setCurrentPageLimit(1);
-        setTotalCarOwner([]);
-        handleCarOwner("", currentPageLimit, 1).then(() => {
-        }).catch(() => {
-            showError("Check Internet Connection");
-        }).finally(() => {
-            setLoader(false);
-            setOnRefreshing(false);
-            setFooterLoader(false);
-        })
-
-    }
+        setCurrentPageLimit(10);
+        handleCarOwner(search, 10, 1);
+    };
 
     const handleSearch = (text: string) => {
         setSearch(text);
 
-        // Clear existing timeout
-        if (searchTimeout) {
-            clearTimeout(searchTimeout);
+        if (searchTimeout.current) {
+            clearTimeout(searchTimeout.current);
         }
 
-        // Set a new timeout
-        const timeout = setTimeout(() => {
+        searchTimeout.current = setTimeout(() => {
             handleCarOwner(text.trim(), currentPageLimit, 1);
-        }, 2000); // 2 seconds debounce
+        }, 400);
+    };
 
-        setSearchTimeout(timeout);
+    const handleClearSearch = () => {
+        setSearch("");
+        if (searchTimeout.current) {
+            clearTimeout(searchTimeout.current);
+        }
+        handleCarOwner("", currentPageLimit, 1);
     };
 
     const goToDetailsScreen = (item: any) => {
-        navigation.navigate("CarOwnerDetails", {carOwner: item})
-    }
+        navigation.navigate("CarOwnerDetails", { carOwner: item });
+    };
 
-    const renderList = ({ item, index }: any) => {
+    const loadMore = () => {
+        if (!loader && !footerLoader && totalCount !== null && totalCarOwner.length < totalCount) {
+            setFooterLoader(true);
+            const newLimit = currentPageLimit + 10;
+            setCurrentPageLimit(newLimit);
+            handleCarOwner(search, newLimit, 1);
+        }
+    };
+
+    const renderLoader = () => {
+        if (!footerLoader) return null;
         return (
-            <View style={styles.itemContainer}>
-                <TouchableOpacity onPress={() => goToDetailsScreen(item)}>
-                    <Text style={styles.nameText}>{item?.Id}</Text>
-                    <Text style={styles.detailText}>Name: {item?.Name}</Text>
-                    <Text style={styles.detailText}>Email: {item?.Email}</Text>
-                    <Text style={styles.detailText}>Phone: {item?.MobileNo}</Text>
-                </TouchableOpacity>
+            <View style={styles.footerLoader}>
+                <ActivityIndicator size="small" color={COLORS.primary} />
+                <Text style={styles.footerLoaderText}>Loading more owners...</Text>
             </View>
         );
     };
 
-    const loadMore = () => {
-        setCurrentPageLimit(currentPageLimit + 10);
-        setFooterLoader(true);
-    }
+    const renderEmpty = () => {
+        if (loader) return null;
+        return (
+            <View style={styles.emptyContainer}>
+                <Ionicons name="car-outline" size={54} color="#CBD5E1" />
+                <Text style={styles.emptyTitle}>No Car Owners Found</Text>
+                <Text style={styles.emptySubtitle}>
+                    {search
+                        ? `No results match "${search}". Try searching by another keyword.`
+                        : "There are currently no registered car owners in the system."}
+                </Text>
+            </View>
+        );
+    };
 
-    const renderLoader = () => {
+    const renderList = ({ item }: { item: any }) => {
+        const initials = (item?.Name || "O")
+            .split(" ")
+            .map((n: string) => n[0])
+            .slice(0, 2)
+            .join("")
+            .toUpperCase();
 
         return (
-            totalCount !== totalCarOwner.length && (
-                <View style={{ alignItems: 'center', height: 30, marginTop: 16 }}>
-                    {
-                        footerLoader && <ActivityIndicator size={"large"} color={"#5a639c"} />
-                    }
+            <TouchableOpacity
+                onPress={() => goToDetailsScreen(item)}
+                activeOpacity={0.75}
+                style={styles.card}
+            >
+                <View style={styles.cardHeader}>
+                    <View style={styles.avatarWrapper}>
+                        <Text style={styles.avatarText}>{initials}</Text>
+                    </View>
+                    <View style={styles.headerInfo}>
+                        <Text style={styles.nameText} numberOfLines={1}>
+                            {item?.Name || "Unnamed Owner"}
+                        </Text>
+                        <View style={styles.idBadge}>
+                            <Text style={styles.idBadgeText}>ID: #{item?.Id ?? "-"}</Text>
+                        </View>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
                 </View>
-            )
-        )
-    }
+
+                <View style={styles.divider} />
+
+                <View style={styles.cardBody}>
+                    <View style={styles.infoRow}>
+                        <Ionicons name="call-outline" size={15} color={COLORS.primary} style={styles.infoIcon} />
+                        <Text style={styles.infoText}>{item?.MobileNo || "No phone provided"}</Text>
+                    </View>
+                    <View style={[styles.infoRow, { marginTop: 6 }]}>
+                        <Ionicons name="mail-outline" size={15} color="#64748B" style={styles.infoIcon} />
+                        <Text style={styles.infoText} numberOfLines={1}>
+                            {item?.Email || "No email provided"}
+                        </Text>
+                    </View>
+                </View>
+            </TouchableOpacity>
+        );
+    };
 
     useEffect(() => {
-        handleCarOwner("", currentPageLimit, 1);
-
+        handleCarOwner("", 10, 1);
         return () => {
-            if (searchTimeout) {
-                clearTimeout(searchTimeout);
+            if (searchTimeout.current) {
+                clearTimeout(searchTimeout.current);
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
-        <View style={{ flex: 1 }}>
-            <View style={{ flex: 1 }}>
-                <Header value={value} />
-            </View>
+        <View style={styles.container}>
+            <Header value={value} subtitle="Manage Registered Owners" />
 
-            <View style={{ flex: 9, padding: 10 }}>
-                {loader && (
-                    <ActivityIndicator size="large" color="#0000ff" />
-                )}
-                <>
-                    <View>
-                        <TextInput
-                            placeholder="Search by name, email or phone"
-                            value={search}
-                            onChangeText={handleSearch}
-                            style={{
-                                backgroundColor: '#fff',
-                                borderWidth: 1,
-                                borderColor: '#ccc',
-                                borderRadius: 8,
-                                padding: 10,
-                                marginBottom: 10,
-                                fontSize: 16,
-                                color: '#000',
-                            }}
-                            placeholderTextColor="#555"
-                        />
+            <View style={styles.content}>
+                {/* Search Bar */}
+                <View style={styles.searchContainer}>
+                    <Ionicons name="search-outline" size={20} color="#64748B" style={styles.searchIcon} />
+                    <TextInput
+                        placeholder="Search by name, email or phone"
+                        value={search}
+                        onChangeText={handleSearch}
+                        style={styles.searchInput}
+                        placeholderTextColor="#94A3B8"
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                    />
+                    {search ? (
+                        <TouchableOpacity
+                            onPress={handleClearSearch}
+                            style={styles.clearButton}
+                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                            <Ionicons name="close-circle" size={18} color="#94A3B8" />
+                        </TouchableOpacity>
+                    ) : null}
+                </View>
+
+                {/* Counter Bar */}
+                <View style={styles.countRow}>
+                    <Text style={styles.countLabel}>Total Car Owners</Text>
+                    <View style={styles.countBadge}>
+                        <Text style={styles.countBadgeText}>{totalCount ?? totalCarOwner.length}</Text>
                     </View>
+                </View>
 
-                    <View style={{ width: '100%', padding: 1 }}>
-                        <Text style={{ color: 'black', fontWeight: 'bold', textAlign: 'right' }}>Total Count: {totalCount}</Text>
+                {/* Main List */}
+                {loader && totalCarOwner.length === 0 ? (
+                    <View style={styles.centerLoader}>
+                        <ActivityIndicator size="large" color={COLORS.primary} />
+                        <Text style={styles.centerLoaderText}>Fetching car owners...</Text>
                     </View>
-
+                ) : (
                     <FlatList
                         data={totalCarOwner}
                         renderItem={renderList}
-                        keyExtractor={(item, index) => index.toString()}
+                        keyExtractor={(item, index) => item?.Id?.toString() || index.toString()}
                         removeClippedSubviews={false}
-                        ListEmptyComponent={
-                            <Text style={styles.emptyText}>No car owners found.</Text>
-                        }
                         showsVerticalScrollIndicator={false}
-                        refreshControl={<RefreshControl refreshing={onRefreshing} onRefresh={onRefresh} tintColor={"#6200EE"} />}
-                        contentContainerStyle={{
-                            // paddingVertical: 16,
-                            gap: 10,
-                        }}
+                        ListEmptyComponent={renderEmpty}
+                        refreshControl={
+                            <RefreshControl
+                                refreshing={onRefreshing}
+                                onRefresh={onRefresh}
+                                colors={[COLORS.primary]}
+                                tintColor={COLORS.primary}
+                            />
+                        }
+                        contentContainerStyle={styles.listContent}
                         ListFooterComponent={renderLoader}
                         onEndReached={loadMore}
-                        onEndReachedThreshold={0}
+                        onEndReachedThreshold={0.4}
                     />
-                </>
+                )}
             </View>
         </View>
     );
@@ -189,27 +245,170 @@ const TotalCarOwnerList = () => {
 export default TotalCarOwnerList;
 
 const styles = StyleSheet.create({
-    itemContainer: {
-        backgroundColor: '#f2f2f2',
-        marginBottom: 10,
-        padding: 15,
-        borderRadius: 10,
-        elevation: 2,
-        borderWidth: 0.5
+    container: {
+        flex: 1,
+        backgroundColor: COLORS.background,
+    },
+    content: {
+        flex: 1,
+        paddingHorizontal: 16,
+        paddingTop: 14,
+    },
+    searchContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#FFFFFF",
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        height: 48,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        marginBottom: 12,
+        ...SHADOWS.sm,
+    },
+    searchIcon: {
+        marginRight: 8,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 14,
+        color: COLORS.textMain,
+        paddingVertical: 0,
+    },
+    clearButton: {
+        padding: 4,
+    },
+    countRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 12,
+        paddingHorizontal: 2,
+    },
+    countLabel: {
+        fontSize: 13,
+        fontWeight: "600",
+        color: COLORS.textSecondary,
+    },
+    countBadge: {
+        backgroundColor: "#E2E8F0",
+        paddingHorizontal: 10,
+        paddingVertical: 3,
+        borderRadius: 12,
+    },
+    countBadgeText: {
+        fontSize: 12,
+        fontWeight: "700",
+        color: COLORS.textMain,
+    },
+    listContent: {
+        paddingBottom: 30,
+        flexGrow: 1,
+    },
+    card: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: 16,
+        padding: 16,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        ...SHADOWS.sm,
+    },
+    cardHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    avatarWrapper: {
+        width: 44,
+        height: 44,
+        borderRadius: 14,
+        backgroundColor: "#E0F2FE",
+        alignItems: "center",
+        justifyContent: "center",
+        marginRight: 12,
+    },
+    avatarText: {
+        fontSize: 16,
+        fontWeight: "800",
+        color: "#0369A1",
+    },
+    headerInfo: {
+        flex: 1,
     },
     nameText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginBottom: 5,
+        fontSize: 15,
+        fontWeight: "700",
+        color: COLORS.textMain,
+        marginBottom: 3,
     },
-    detailText: {
-        fontSize: 14,
-        color: '#555',
+    idBadge: {
+        alignSelf: "flex-start",
+        backgroundColor: "#F1F5F9",
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 6,
     },
-    emptyText: {
-        textAlign: 'center',
-        marginTop: 20,
+    idBadgeText: {
+        fontSize: 11,
+        fontWeight: "600",
+        color: "#64748B",
+    },
+    divider: {
+        height: 1,
+        backgroundColor: COLORS.borderLight,
+        marginVertical: 12,
+    },
+    cardBody: {},
+    infoRow: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    infoIcon: {
+        marginRight: 8,
+        width: 16,
+    },
+    infoText: {
+        fontSize: 13,
+        color: COLORS.textSecondary,
+        fontWeight: "500",
+        flex: 1,
+    },
+    centerLoader: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    centerLoaderText: {
+        fontSize: 13,
+        color: COLORS.textMuted,
+        marginTop: 10,
+    },
+    footerLoader: {
+        paddingVertical: 16,
+        alignItems: "center",
+    },
+    footerLoaderText: {
+        fontSize: 12,
+        color: COLORS.textMuted,
+        marginTop: 6,
+    },
+    emptyContainer: {
+        alignItems: "center",
+        justifyContent: "center",
+        paddingTop: 60,
+        paddingHorizontal: 20,
+    },
+    emptyTitle: {
         fontSize: 16,
-        color: 'gray',
+        fontWeight: "700",
+        color: COLORS.textMain,
+        marginTop: 12,
+    },
+    emptySubtitle: {
+        fontSize: 13,
+        color: COLORS.textMuted,
+        textAlign: "center",
+        marginTop: 6,
+        lineHeight: 18,
     },
 });

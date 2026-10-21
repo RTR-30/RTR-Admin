@@ -1,208 +1,176 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
     View,
     Text,
-    ActivityIndicator,
+    TouchableOpacity,
+    ScrollView,
     StyleSheet,
-    RefreshControl,
-    FlatList,
-    TextInput
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import Ionicons from "react-native-vector-icons/Ionicons";
+
 import Header from "../../../Common/PageHeader";
-import { totalbookinglist } from "./helperapi";
-import moment from "moment";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { showError } from "../../../Common/ToastMessage";
+import { COLORS, SHADOWS } from "../../../utils/ColorCode";
 
-const TotalBookingList = () => {
-    const value = "Booking List";
-    const [loader, setLoader] = useState<boolean>(false);
-    const [onRefreshing, setOnRefreshing] = useState<boolean>(false);
-    const [footerLoader, setFooterLoader] = useState<boolean>(false);
-    const [currentPageLimit, setCurrentPageLimit] = useState<any>(10);
-    const [datas, setDatas] = useState<any>([]);
-    const [totalCount, setTotalCount] = useState<any>(null);
-    const [search, setSearch] = useState<any>(null);
-    const [searchTimeout, setSearchTimeout] = useState<any>(null);
+const BookingList = () => {
+    const navigation: any = useNavigation();
+    const value = "Booking Hub";
 
-
-    const handleBookingList = async (value?: any, limit?: any, page?: any) => {
-        if (footerLoader) {
-            setLoader(false);
-        } else {
-            setLoader(true);
-        }
-
-        try {
-            const res = await totalbookinglist(value, limit, page);
-            
-            setTotalCount(res?.data?.pagination?.total);
-            setDatas(res?.data?.data || []);
-        } catch (error) {
-            showError("error booking list");
-        } finally {
-            setLoader(false)
-            setOnRefreshing(false);
-            setFooterLoader(false);
-        }
-    }
-
-    const onRefresh = () => {
-        setOnRefreshing(true);
-        setLoader(false);
-        setFooterLoader(false);
-        setTotalCount(null);
-        setCurrentPageLimit(1);
-        setDatas([]);
-        handleBookingList("", currentPageLimit, 1).then(() => {
-        }).catch(() => {
-            showError("Check Internet Connection");
-        }).finally(() => {
-            setLoader(false);
-            setOnRefreshing(false);
-            setFooterLoader(false);
-        })
-
-    }
-
-    const handleSearch = (text: string) => {
-        setSearch(text);
-
-        if (searchTimeout) {
-            clearTimeout(searchTimeout);
-        }
-
-        const timeout = setTimeout(() => {
-            handleBookingList(text.trim(), currentPageLimit, 1);
-        }, 2000);
-
-        setSearchTimeout(timeout);
-    };
-
-    const renderList = async ({ item, index }: any) => {
-        const formattedStartDate = await moment(item.StartDate).format("DD MMM YYYY, hh:mm A");
-        const formattedEndDate = await moment(item.EndDate).format("DD MMM YYYY, hh:mm A");
-
-        return (
-            <View style={styles.itemContainer}>
-                <Text style={styles.nameText}>{item?.Name}</Text>
-                <Text style={styles.detailText}>Address: {item?.Address}</Text>
-                <Text style={styles.detailText}>Phone: {item?.MobileNo}</Text>
-                <Text style={styles.detailText}>Start Date: {formattedStartDate}</Text>
-                <Text style={styles.detailText}>End Date: {formattedEndDate}</Text>
-            </View>
-        );
-    };
-
-    const loadMore = () => {
-        setCurrentPageLimit(currentPageLimit + 10);
-        setFooterLoader(true);
-    }
-
-    const renderLoader = () => {
-        return (
-            totalCount !== datas.length && (
-                <View style={{ alignItems: 'center', height: 30, marginTop: 16 }}>
-                    {
-                        footerLoader && <ActivityIndicator size={"large"} color={"#5a639c"} />
-                    }
-                </View>
-            )
-        )
-    }
-
-    useEffect(() => {
-        handleBookingList("", currentPageLimit, 1);
-
-        return () => {
-            if (searchTimeout) {
-                clearTimeout(searchTimeout);
-            }
-        };
-    }, []);
+    const menuOptions = [
+        {
+            title: "Not Accepted Bookings",
+            subtitle: "Trips awaiting partner acceptance or broadcasting across fleet",
+            icon: "alert-circle",
+            iconColor: "#D97706",
+            iconBg: "#FEF3C7",
+            badge: "Live Queue",
+            badgeBg: "#FFFBEB",
+            badgeColor: "#B45309",
+            onPress: () => navigation.navigate("NotAcceptedList"),
+        },
+        {
+            title: "Auto Closing Bookings",
+            subtitle: "Bookings automatically cancelled or closed due to timeouts",
+            icon: "timer-outline",
+            iconColor: "#DC2626",
+            iconBg: "#FEE2E2",
+            badge: "Timeout Logs",
+            badgeBg: "#FEF2F2",
+            badgeColor: "#991B1B",
+            onPress: () => navigation.navigate("AutoClosingList"),
+        },
+    ];
 
     return (
-        <View style={{ flex: 1 }}>
-            <View style={{ flex: 1 }}>
-                <Header value={value} />
-            </View>
+        <View style={styles.container}>
+            <Header value={value} subtitle="Trip Operations & Exception Logs" />
 
-            <View style={{ flex: 9, padding: 10 }}>
-                {loader && (
-                    <ActivityIndicator size="large" color="#0000ff" />
-                )}
-                <>
-                    <View>
-                        <TextInput
-                            placeholder="Search by name, email or phone"
-                            value={search}
-                            onChangeText={handleSearch}
-                            style={{
-                                backgroundColor: '#fff',
-                                borderWidth: 1,
-                                borderColor: '#ccc',
-                                borderRadius: 8,
-                                padding: 10,
-                                marginBottom: 10,
-                                fontSize: 16,
-                                color: '#000',
-                            }}
-                            placeholderTextColor="#555"
-                        />
-                    </View>
+            <ScrollView
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+            >
+                <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>Select Booking Category</Text>
+                    <Text style={styles.sectionDesc}>
+                        Monitor incoming ride requests and automated trip resolution logs
+                    </Text>
+                </View>
 
-                    <View style={{ width: '100%', padding: 1 }}>
-                        <Text style={{ color: 'black', fontWeight: 'bold', textAlign: 'right' }}>Total Count: {totalCount}</Text>
-                    </View>
+                {menuOptions.map((item, index) => (
+                    <TouchableOpacity
+                        key={index}
+                        onPress={item.onPress}
+                        activeOpacity={0.75}
+                        style={styles.card}
+                    >
+                        <View style={styles.cardTop}>
+                            <View style={[styles.iconWrapper, { backgroundColor: item.iconBg }]}>
+                                <Ionicons name={item.icon} size={24} color={item.iconColor} />
+                            </View>
+                            <View style={[styles.badge, { backgroundColor: item.badgeBg }]}>
+                                <Text style={[styles.badgeText, { color: item.badgeColor }]}>
+                                    {item.badge}
+                                </Text>
+                            </View>
+                        </View>
 
-                    <FlatList
-                        data={datas}
-                        keyExtractor={(item, index) => index.toString()}
-                        renderItem={renderList}
-                        removeClippedSubviews={false}
-                        ListEmptyComponent={
-                            <Text style={styles.emptyText}>No Bookings found.</Text>
-                        }
-                        showsVerticalScrollIndicator={false}
-                        refreshControl={<RefreshControl refreshing={onRefreshing} onRefresh={onRefresh} tintColor={"#6200EE"} />}
-                        contentContainerStyle={{
-                            // paddingVertical: 16,
-                            gap: 10,
-                        }}
-                        ListFooterComponent={renderLoader}
-                        onEndReached={loadMore}
-                        onEndReachedThreshold={0}
-                    />
-                </>
-            </View>
+                        <View style={styles.cardContent}>
+                            <Text style={styles.cardTitle}>{item.title}</Text>
+                            <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
+                        </View>
+
+                        <View style={styles.cardFooter}>
+                            <Text style={styles.actionText}>View Bookings</Text>
+                            <Ionicons name="arrow-forward" size={16} color={COLORS.primary} />
+                        </View>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
         </View>
-    )
+    );
 };
 
-export default TotalBookingList;
+export default BookingList;
 
 const styles = StyleSheet.create({
-    itemContainer: {
-        backgroundColor: '#f2f2f2',
-        marginBottom: 10,
-        padding: 15,
-        borderRadius: 10,
-        elevation: 2,
-        borderWidth: 0.5
+    container: {
+        flex: 1,
+        backgroundColor: COLORS.background,
     },
-    nameText: {
+    scrollContent: {
+        padding: 16,
+        paddingBottom: 40,
+    },
+    sectionHeader: {
+        marginBottom: 16,
+    },
+    sectionTitle: {
         fontSize: 16,
-        fontWeight: 'bold',
-        marginBottom: 5,
+        fontWeight: "800",
+        color: COLORS.textMain,
     },
-    detailText: {
-        fontSize: 14,
-        color: '#555',
+    sectionDesc: {
+        fontSize: 13,
+        color: COLORS.textSecondary,
+        marginTop: 4,
     },
-    emptyText: {
-        textAlign: 'center',
-        marginTop: 20,
+    card: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: 18,
+        padding: 18,
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        ...SHADOWS.sm,
+    },
+    cardTop: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 14,
+    },
+    iconWrapper: {
+        width: 48,
+        height: 48,
+        borderRadius: 14,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    badge: {
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 8,
+    },
+    badgeText: {
+        fontSize: 11,
+        fontWeight: "700",
+    },
+    cardContent: {
+        marginBottom: 14,
+    },
+    cardTitle: {
         fontSize: 16,
-        color: 'gray',
+        fontWeight: "700",
+        color: COLORS.textMain,
+        marginBottom: 4,
+    },
+    cardSubtitle: {
+        fontSize: 13,
+        color: COLORS.textSecondary,
+        lineHeight: 18,
+    },
+    cardFooter: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "flex-end",
+        paddingTop: 12,
+        borderTopWidth: 1,
+        borderTopColor: COLORS.borderLight,
+    },
+    actionText: {
+        fontSize: 13,
+        fontWeight: "700",
+        color: COLORS.primary,
+        marginRight: 6,
     },
 });

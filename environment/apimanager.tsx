@@ -1,12 +1,12 @@
 // const baseUri = "http://10.0.2.2:8000/";
-const baseUri = "http://10.211.21.206:8000/";
+const baseUri = "http://10.182.38.206:8000/";
 
 const base = "admin/";
 const paymentBase = "payment/";
 const feedbackBase = "feedback/";
 
 export const Auth = {
-    login : `${baseUri}${base}auth/login`
+    login: `${baseUri}${base}auth/login`
 }
 
 export const approvalsubmitend = "/verify";
@@ -31,6 +31,14 @@ export const RejectApis = `${baseUri}${base}withdrawal/reject`;
 export const AppsettingsApi = `${baseUri}${base}settings`;
 export const PackageApi = `${baseUri}${base}packages`;
 export const GearTypeApis = `${baseUri}${base}gear-types`;
+export const PartnerBlackAndSuspendedApi = `${baseUri}${base}partners/blocked-suspended`;
+export const UserBlackAndSuspendedApi = `${baseUri}${base}users/blocked-suspended`;
+export const AutoCloseingApi = `${baseUri}${base}bookings/auto-cancelled`;
+export const NotAcceptBookingList = `${baseUri}${base}bookings/not-accepted`;
 
 export const FeedbackApis = `${baseUri}${feedbackBase}tags`;
 
+export const TermsApi = `${baseUri}${base}terms`;
+export const ContentContactUsApi = `${baseUri}content/contact-us`;
+export const AdminContactUsApi = `${baseUri}${base}contact-us`;
+export const ContactUsApi = ContentContactUsApi;

@@ -1,4 +1,3 @@
-import axios from "axios";
 import { GearTypeApis } from "../../../../environment/apimanager";
 import { Delete, Get, Post, Put } from "../../../Common/HttpService";
 

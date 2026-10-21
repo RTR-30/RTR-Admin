@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
     View,
     TouchableOpacity,
@@ -6,27 +6,37 @@ import {
     ScrollView,
     TextInput,
     Switch,
-    ActivityIndicator
+    ActivityIndicator,
+    StyleSheet,
+    KeyboardAvoidingView,
+    Platform,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import Ionicons from "react-native-vector-icons/Ionicons";
+
 import Header from "../../../Common/PageHeader";
-import { COLORS } from "../../../utils/ColorCode";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { COLORS, SHADOWS } from "../../../utils/ColorCode";
 import { showError, showSuccess } from "../../../Common/ToastMessage";
 import { CreatePackageService } from "./helper";
-import { useNavigation } from "@react-navigation/native";
 
 const CreatePackage = () => {
     const value = "Create Package";
     const navigation: any = useNavigation();
     const [loading, setLoading] = useState(false);
 
-    const [createData, setCreateData] = useState<any>({
+    const [createData, setCreateData] = useState<{
+        name: string;
+        amount: string;
+        validity_days: string;
+        description: string[];
+        is_active: boolean;
+    }>({
         name: "",
-        amount: 0,
-        validity_days: 0,
+        amount: "",
+        validity_days: "",
         description: [""],
-        is_active: false
-    })
+        is_active: true,
+    });
 
     const validatePackage = () => {
         if (!createData.name.trim()) {
@@ -48,45 +58,44 @@ const CreatePackage = () => {
             !createData.description.length ||
             createData.description.some((item: string) => item.trim() === "")
         ) {
-            showError("Please enter all descriptions");
+            showError("Please fill all description items");
             return false;
         }
 
         return true;
     };
 
-    const handleCreatePackage = async (data: any) => {
+    const handleCreatePackage = async () => {
         if (!validatePackage()) return;
 
         setLoading(true);
         const payload = {
-            name: data?.name,
-            amount: Number(data?.amount),
-            validity_days: Number(data?.validity_days),
-            description: JSON.stringify(data?.description),
-            is_active: data?.is_active
-        }
+            name: createData.name.trim(),
+            amount: Number(createData.amount),
+            validity_days: Number(createData.validity_days),
+            description: JSON.stringify(createData.description.map((d) => d.trim())),
+            is_active: createData.is_active,
+        };
 
         try {
             const res = await CreatePackageService(payload);
-            const {data: {message = '', success = false}} = res;
-            if(success){
-                showSuccess(message)
+            const { data: { message = "", success = false } = {} } = res || {};
+            if (success) {
+                showSuccess(message || "Package created successfully");
                 navigation.goBack();
             } else {
-                showError(message)
+                showError(message || "Failed to create package");
             }
-        } catch (error) {
-            showError(error)
+        } catch (error: any) {
+            showError(error?.message || "Failed to create package");
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     const handleDescriptionChange = (text: string, index: number) => {
         const updated = [...createData.description];
         updated[index] = text;
-
         setCreateData({
             ...createData,
             description: updated,
@@ -101,192 +110,347 @@ const CreatePackage = () => {
     };
 
     const removeDescription = (index: number) => {
-        const updated = createData.description.filter((_: any, i: any) => i !== index);
-
+        const updated = createData.description.filter((_, i) => i !== index);
         setCreateData({
             ...createData,
-            description: updated.length ? updated : [""], // Keep at least one input
+            description: updated.length ? updated : [""],
         });
     };
 
     return (
-        <View style={{ flex: 1 }}>
-            <View style={{ flex: 1 }}>
-                <Header value={value} />
-            </View>
+        <KeyboardAvoidingView
+            style={styles.container}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+            <Header value={value} subtitle="Driver Subscription & Prepaid Plans" />
 
-            <View style={{ flex: 9, padding: 10, width: '100%' }}>
-                <ScrollView
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{
-                        padding: 10,
-                        paddingBottom: 40,
-                    }}
-                >
-                    {loading && (
-                        <ActivityIndicator size="small" style={{ marginTop: 10 }} />
-                    )}
-                    <View style={{ width: '100%', padding: 5 }}>
-                        <View style={{ marginTop: 2 }}>
-                            <Text style={{ color: COLORS.primary, fontWeight: 'bold', fontSize: 12 }}>Package Name</Text>
-                            <TextInput
-                                placeholder="Enter Package Name"
-                                placeholderTextColor="#999"
-                                value={createData.name}
-                                onChangeText={(text) =>
-                                    setCreateData({ ...createData, name: text })
-                                }
-                                style={{
-                                    height: 50, borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 12, backgroundColor: "#F9FAFB",
-                                    paddingHorizontal: 15, fontSize: 16, marginBottom: 18, marginTop: 5
-                                }}
-                            />
-                        </View>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.scrollContent}
+                keyboardShouldPersistTaps="handled"
+            >
+                {/* Banner */}
+                <View style={styles.banner}>
+                    <View style={styles.bannerIconWrapper}>
+                        <Ionicons name="sparkles-outline" size={24} color="#9333EA" />
+                    </View>
+                    <View style={styles.bannerTextWrapper}>
+                        <Text style={styles.bannerTitle}>Commercial Membership Plan</Text>
+                        <Text style={styles.bannerSubtitle}>
+                            Drivers purchase this package to access premium ride dispatches and reduced platform commission.
+                        </Text>
+                    </View>
+                </View>
 
-                        <View style={{ marginTop: 2 }}>
-                            <Text style={{ color: COLORS.primary, fontWeight: 'bold', fontSize: 12 }}>Amount</Text>
-                            <TextInput
-                                placeholder="Enter Amount"
-                                placeholderTextColor="#999"
-                                value={createData.amount}
-                                onChangeText={(text) =>
-                                    setCreateData({ ...createData, amount: text })
-                                }
-                                keyboardType="numeric"
-                                style={{
-                                    height: 50, borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 12, backgroundColor: "#F9FAFB",
-                                    paddingHorizontal: 15, fontSize: 16, marginBottom: 18, marginTop: 5
-                                }}
-                            />
-                        </View>
+                {/* Form Card */}
+                <View style={styles.formCard}>
+                    {/* Name */}
+                    <Text style={styles.label}>Package Name</Text>
+                    <View style={styles.inputWrapper}>
+                        <Ionicons name="pricetag-outline" size={18} color="#64748B" style={styles.inputIcon} />
+                        <TextInput
+                            placeholder="e.g. Gold Fleet Partner, Monthly Pro Pass"
+                            placeholderTextColor="#94A3B8"
+                            value={createData.name}
+                            onChangeText={(text) => setCreateData({ ...createData, name: text })}
+                            style={styles.textInput}
+                        />
+                    </View>
 
-                        <View style={{ marginTop: 2 }}>
-                            <Text style={{ color: COLORS.primary, fontWeight: 'bold', fontSize: 12 }}>Validity Days</Text>
-                            <TextInput
-                                placeholder="Enter Validity Days"
-                                placeholderTextColor="#999"
-                                value={createData.validity_days}
-                                onChangeText={(text) =>
-                                    setCreateData({ ...createData, validity_days: text })
-                                }
-                                style={{
-                                    height: 50, borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 12, backgroundColor: "#F9FAFB",
-                                    paddingHorizontal: 15, fontSize: 16, marginBottom: 18, marginTop: 5
-                                }}
-                            />
-                        </View>
-
-                        <View style={{ marginTop: 2 }}>
-                            <Text style={{ color: COLORS.primary, fontWeight: "bold", fontSize: 12 }}>Is Active</Text>
-
-                            <View
-                                style={{
-                                    height: 50, borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 12, backgroundColor: "#F9FAFB",
-                                    paddingHorizontal: 15, flexDirection: "row", justifyContent: "space-between",
-                                    alignItems: "center", marginBottom: 18,
-                                }}
-                            >
-                                <Text style={{ fontSize: 16, color: "#333", }}>{createData.is_active ? "Active" : "Inactive"}</Text>
-
-                                <Switch
-                                    value={createData.is_active}
-                                    onValueChange={(value) =>
-                                        setCreateData({
-                                            ...createData,
-                                            is_active: value,
-                                        })
-                                    }
-                                    trackColor={{ false: "#D1D5DB", true: COLORS.primary }}
-                                    thumbColor="#FFFFFF"
+                    {/* Amount & Validity Grid */}
+                    <View style={styles.twoColumnGrid}>
+                        <View style={styles.columnHalf}>
+                            <Text style={styles.label}>Price (₹)</Text>
+                            <View style={styles.inputWrapper}>
+                                <Ionicons name="cash-outline" size={18} color="#64748B" style={styles.inputIcon} />
+                                <TextInput
+                                    placeholder="e.g. 999"
+                                    placeholderTextColor="#94A3B8"
+                                    value={createData.amount}
+                                    onChangeText={(text) => setCreateData({ ...createData, amount: text })}
+                                    keyboardType="numeric"
+                                    style={styles.textInput}
                                 />
                             </View>
                         </View>
 
-                        <View style={{ marginTop: 2 }}>
-                            <Text
-                                style={{
-                                    color: COLORS.primary,
-                                    fontWeight: "bold",
-                                    fontSize: 12,
-                                    marginBottom: 10,
-                                }}
-                            >
-                                Description
-                            </Text>
-
-                            {createData.description.map((item: any, index: any) => (
-                                <View
-                                    key={index}
-                                    style={{
-                                        flexDirection: "row",
-                                        alignItems: "center",
-                                        marginBottom: 12,
-                                    }}
-                                >
-                                    <TextInput
-                                        placeholder={`Line ${index + 1}`}
-                                        placeholderTextColor="#999"
-                                        value={item}
-                                        onChangeText={(text) => handleDescriptionChange(text, index)}
-                                        style={{
-                                            flex: 1,
-                                            height: 50,
-                                            borderWidth: 1,
-                                            borderColor: "#E5E7EB",
-                                            borderRadius: 12,
-                                            backgroundColor: "#F9FAFB",
-                                            paddingHorizontal: 15,
-                                            fontSize: 16,
-                                        }}
-                                    />
-
-                                    <TouchableOpacity
-                                        onPress={() => removeDescription(index)}
-                                        style={{
-                                            marginLeft: 10,
-                                            backgroundColor: "#EF4444",
-                                            paddingHorizontal: 15,
-                                            paddingVertical: 14,
-                                            borderRadius: 10,
-                                        }}
-                                    >
-                                        <Text style={{ color: "#fff", fontWeight: "bold" }}>-</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            ))}
-
-                            <TouchableOpacity
-                                onPress={addDescription}
-                                style={{
-                                    backgroundColor: COLORS.primary,
-                                    paddingVertical: 14,
-                                    borderRadius: 12,
-                                    alignItems: "center",
-                                    marginTop: 5,
-                                }}
-                            >
-                                <Text
-                                    style={{
-                                        color: "#fff",
-                                        fontWeight: "bold",
-                                        fontSize: 15,
-                                    }}
-                                >
-                                    + Add Line
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        <View style={{ marginTop: '10%', justifyContent: 'center', alignItems: 'center' }}>
-                            <TouchableOpacity onPress={() => handleCreatePackage(createData)} style={{ width: '70%', justifyContent: 'center', alignItems: 'center', backgroundColor: "green", padding: 10, borderRadius: 40 }}>
-                                <Text style={{ color: "white", fontWeight: "bold", fontSize: 16 }}>Create Package</Text>
-                            </TouchableOpacity>
+                        <View style={styles.columnHalf}>
+                            <Text style={styles.label}>Validity (Days)</Text>
+                            <View style={styles.inputWrapper}>
+                                <Ionicons name="calendar-outline" size={18} color="#64748B" style={styles.inputIcon} />
+                                <TextInput
+                                    placeholder="e.g. 30"
+                                    placeholderTextColor="#94A3B8"
+                                    value={createData.validity_days}
+                                    onChangeText={(text) => setCreateData({ ...createData, validity_days: text })}
+                                    keyboardType="numeric"
+                                    style={styles.textInput}
+                                />
+                            </View>
                         </View>
                     </View>
-                </ScrollView>
-            </View>
-        </View>
-    )
-}
+
+                    {/* Active Status Switch */}
+                    <View style={styles.switchRow}>
+                        <View>
+                            <Text style={styles.switchTitle}>Publish Immediately</Text>
+                            <Text style={styles.switchDesc}>Make visible to drivers in the driver application</Text>
+                        </View>
+                        <Switch
+                            value={createData.is_active}
+                            onValueChange={(val) => setCreateData({ ...createData, is_active: val })}
+                            trackColor={{ false: "#CBD5E1", true: "#86EFAC" }}
+                            thumbColor={createData.is_active ? "#10B981" : "#F8FAFC"}
+                        />
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    {/* Features / Description */}
+                    <View style={styles.featuresHeader}>
+                        <Text style={styles.label}>Plan Features & Inclusions</Text>
+                        <TouchableOpacity onPress={addDescription} style={styles.addLineButton}>
+                            <Ionicons name="add" size={16} color={COLORS.primary} />
+                            <Text style={styles.addLineButtonText}>Add Line</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {createData.description.map((item, index) => (
+                        <View key={index} style={styles.featureRow}>
+                            <View style={styles.featureIndexBadge}>
+                                <Text style={styles.featureIndexText}>{index + 1}</Text>
+                            </View>
+                            <TextInput
+                                placeholder={`Feature #${index + 1} (e.g. 0% Commission on Outstation)`}
+                                placeholderTextColor="#94A3B8"
+                                value={item}
+                                onChangeText={(text) => handleDescriptionChange(text, index)}
+                                style={styles.featureInput}
+                            />
+                            {createData.description.length > 1 ? (
+                                <TouchableOpacity
+                                    onPress={() => removeDescription(index)}
+                                    style={styles.removeLineButton}
+                                >
+                                    <Ionicons name="trash-outline" size={16} color="#DC2626" />
+                                </TouchableOpacity>
+                            ) : null}
+                        </View>
+                    ))}
+
+                    {/* Submit Button */}
+                    <TouchableOpacity
+                        onPress={handleCreatePackage}
+                        disabled={loading}
+                        activeOpacity={0.8}
+                        style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+                    >
+                        {loading ? (
+                            <ActivityIndicator size="small" color="#FFFFFF" />
+                        ) : (
+                            <View style={styles.buttonInner}>
+                                <Ionicons name="checkmark-circle-outline" size={18} color="#FFFFFF" style={styles.btnIcon} />
+                                <Text style={styles.submitButtonText}>Create Package</Text>
+                            </View>
+                        )}
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+        </KeyboardAvoidingView>
+    );
+};
 
 export default CreatePackage;
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: COLORS.background,
+    },
+    scrollContent: {
+        padding: 16,
+        paddingBottom: 40,
+    },
+    banner: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: 16,
+        padding: 16,
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        ...SHADOWS.sm,
+    },
+    bannerIconWrapper: {
+        width: 44,
+        height: 44,
+        borderRadius: 12,
+        backgroundColor: "#F3E8FF",
+        alignItems: "center",
+        justifyContent: "center",
+        marginRight: 12,
+    },
+    bannerTextWrapper: {
+        flex: 1,
+    },
+    bannerTitle: {
+        fontSize: 15,
+        fontWeight: "700",
+        color: COLORS.textMain,
+    },
+    bannerSubtitle: {
+        fontSize: 12,
+        color: COLORS.textSecondary,
+        marginTop: 2,
+        lineHeight: 16,
+    },
+    formCard: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: 18,
+        padding: 20,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        ...SHADOWS.sm,
+    },
+    label: {
+        fontSize: 13,
+        fontWeight: "700",
+        color: COLORS.textMain,
+        marginBottom: 8,
+    },
+    inputWrapper: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#F8FAFC",
+        borderWidth: 1.5,
+        borderColor: COLORS.border,
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        height: 48,
+        marginBottom: 16,
+    },
+    inputIcon: {
+        marginRight: 8,
+    },
+    textInput: {
+        flex: 1,
+        fontSize: 14,
+        color: COLORS.textMain,
+        paddingVertical: 0,
+    },
+    twoColumnGrid: {
+        flexDirection: "row",
+        gap: 12,
+    },
+    columnHalf: {
+        flex: 1,
+    },
+    switchRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingVertical: 8,
+        marginBottom: 12,
+    },
+    switchTitle: {
+        fontSize: 14,
+        fontWeight: "700",
+        color: COLORS.textMain,
+    },
+    switchDesc: {
+        fontSize: 11,
+        color: COLORS.textMuted,
+        marginTop: 2,
+    },
+    divider: {
+        height: 1,
+        backgroundColor: COLORS.borderLight,
+        marginVertical: 14,
+    },
+    featuresHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 12,
+    },
+    addLineButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#FEE2E2",
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 8,
+    },
+    addLineButtonText: {
+        fontSize: 12,
+        fontWeight: "700",
+        color: COLORS.primary,
+        marginLeft: 4,
+    },
+    featureRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 10,
+    },
+    featureIndexBadge: {
+        width: 26,
+        height: 26,
+        borderRadius: 13,
+        backgroundColor: "#E2E8F0",
+        alignItems: "center",
+        justifyContent: "center",
+        marginRight: 8,
+    },
+    featureIndexText: {
+        fontSize: 11,
+        fontWeight: "700",
+        color: "#475569",
+    },
+    featureInput: {
+        flex: 1,
+        height: 44,
+        borderWidth: 1.5,
+        borderColor: COLORS.border,
+        borderRadius: 10,
+        backgroundColor: "#F8FAFC",
+        paddingHorizontal: 12,
+        fontSize: 13,
+        color: COLORS.textMain,
+    },
+    removeLineButton: {
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        backgroundColor: "#FEF2F2",
+        alignItems: "center",
+        justifyContent: "center",
+        marginLeft: 8,
+    },
+    submitButton: {
+        backgroundColor: COLORS.primary,
+        height: 50,
+        borderRadius: 12,
+        alignItems: "center",
+        justifyContent: "center",
+        marginTop: 16,
+        ...SHADOWS.sm,
+    },
+    submitButtonDisabled: {
+        opacity: 0.7,
+    },
+    buttonInner: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    btnIcon: {
+        marginRight: 6,
+    },
+    submitButtonText: {
+        color: "#FFFFFF",
+        fontSize: 15,
+        fontWeight: "700",
+        letterSpacing: 0.2,
+    },
+});

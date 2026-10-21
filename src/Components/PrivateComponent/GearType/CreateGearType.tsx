@@ -1,107 +1,222 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
     View,
     TouchableOpacity,
     Text,
     ScrollView,
     TextInput,
-    Switch,
-    ActivityIndicator
+    ActivityIndicator,
+    StyleSheet,
+    KeyboardAvoidingView,
+    Platform,
 } from "react-native";
-import Header from "../../../Common/PageHeader";
 import { useNavigation } from "@react-navigation/native";
+import Ionicons from "react-native-vector-icons/Ionicons";
+
+import Header from "../../../Common/PageHeader";
 import { showError, showSuccess } from "../../../Common/ToastMessage";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { CreateGearTypeService } from "./helper";
-import { COLORS } from "../../../utils/ColorCode";
+import { COLORS, SHADOWS } from "../../../utils/ColorCode";
 
 const CreateGearType = () => {
     const value = "Create Gear Type";
     const navigation: any = useNavigation();
     const [loading, setLoading] = useState(false);
-    const [GearType, setGearType] = useState<any>({
-        name: ''
-    })
+    const [gearType, setGearType] = useState<{ name: string }>({
+        name: "",
+    });
 
-    const CreateGearTypes = async () => {
-        if (GearType?.name === "") {
-            return showError('Enter GearType Name');
+    const handleCreateGearType = async () => {
+        if (!gearType.name.trim()) {
+            showError("Please enter gear type name");
+            return;
         }
+
         setLoading(true);
         const payload = {
-            name: GearType?.name,
-            is_active: true
-        }
+            name: gearType.name.trim(),
+            is_active: true,
+        };
 
         try {
             const res = await CreateGearTypeService(payload);
-            const { data: { message = '', success = false } } = res;
+            const { data: { message = "", success = false } = {} } = res || {};
             if (success) {
-                showSuccess(message)
+                showSuccess(message || "Gear type created successfully");
                 navigation.goBack();
             } else {
-                showError(message)
+                showError(message || "Failed to create gear type");
             }
-        } catch (error) {
-            showError(error)
+        } catch (error: any) {
+            showError(error?.message || "Failed to create gear type");
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
-    
+    };
+
     return (
-        <View style={{ flex: 1 }}>
-            <View style={{ flex: 1 }}>
-                <Header value={value} />
-            </View>
+        <KeyboardAvoidingView
+            style={styles.container}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+            <Header value={value} subtitle="Add New Transmission Specification" />
 
-            <View style={{ flex: 9, padding: 10, width: '100%' }}>
-                <ScrollView
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{
-                        padding: 10,
-                        paddingBottom: 40,
-                    }}
-                >
-                    {loading && (
-                        <ActivityIndicator size="small" style={{ marginTop: 10 }} />
-                    )}
-
-                    <View style={{ width: '100%', padding: 5 }}>
-                        <View style={{ marginTop: 2 }}>
-                            <Text style={{ color: COLORS.primary, fontWeight: 'bold', fontSize: 12 }}>Gear Name</Text>
-                            <TextInput
-                                placeholder="Enter Gear Type Name"
-                                placeholderTextColor="#999"
-                                value={GearType.name}
-                                onChangeText={(text) =>
-                                    setGearType({ ...GearType, name: text })
-                                }
-                                style={{
-                                    height: 50,
-                                    borderWidth: 1,
-                                    borderColor: "#E5E7EB",
-                                    borderRadius: 12,
-                                    backgroundColor: "#F9FAFB",
-                                    paddingHorizontal: 15,
-                                    fontSize: 16,
-                                    marginBottom: 18,
-                                    marginTop: 5,
-                                }}
-                            />
-                        </View>
-
-                        <View style={{ marginTop: '10%', justifyContent: 'center', alignItems: 'center' }}>
-                            <TouchableOpacity onPress={() => CreateGearTypes()} style={{ width: '70%', justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.primary, padding: 10, borderRadius: 40 }}>
-                                <Text style={{ color: "white", fontWeight: "bold", fontSize: 16 }}>Create Package</Text>
-                            </TouchableOpacity>
-                        </View>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.scrollContent}
+                keyboardShouldPersistTaps="handled"
+            >
+                {/* Info Card */}
+                <View style={styles.banner}>
+                    <View style={styles.bannerIconWrapper}>
+                        <Ionicons name="information-circle-outline" size={24} color="#0284C7" />
                     </View>
-                </ScrollView>
-            </View>
+                    <View style={styles.bannerTextWrapper}>
+                        <Text style={styles.bannerTitle}>Transmission Mapping</Text>
+                        <Text style={styles.bannerSubtitle}>
+                            Gear types allow users to filter drivers who have verified experience operating that transmission.
+                        </Text>
+                    </View>
+                </View>
 
-        </View>
-    )
-}
+                {/* Form Card */}
+                <View style={styles.formCard}>
+                    <Text style={styles.fieldLabel}>Gear Type Name</Text>
+                    <View style={styles.inputWrapper}>
+                        <Ionicons name="cog-outline" size={18} color="#64748B" style={styles.inputIcon} />
+                        <TextInput
+                            placeholder="e.g. Manual, Automatic, Electric (EV)"
+                            placeholderTextColor="#94A3B8"
+                            value={gearType.name}
+                            onChangeText={(text) => setGearType({ name: text })}
+                            style={styles.textInput}
+                            autoCapitalize="words"
+                        />
+                    </View>
+
+                    <TouchableOpacity
+                        onPress={handleCreateGearType}
+                        disabled={loading}
+                        activeOpacity={0.8}
+                        style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+                    >
+                        {loading ? (
+                            <ActivityIndicator size="small" color="#FFFFFF" />
+                        ) : (
+                            <View style={styles.buttonInner}>
+                                <Ionicons name="checkmark-circle-outline" size={18} color="#FFFFFF" style={styles.buttonIcon} />
+                                <Text style={styles.submitButtonText}>Create Gear Type</Text>
+                            </View>
+                        )}
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+        </KeyboardAvoidingView>
+    );
+};
 
 export default CreateGearType;
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: COLORS.background,
+    },
+    scrollContent: {
+        padding: 16,
+        paddingBottom: 40,
+    },
+    banner: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: 16,
+        padding: 16,
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        ...SHADOWS.sm,
+    },
+    bannerIconWrapper: {
+        width: 44,
+        height: 44,
+        borderRadius: 12,
+        backgroundColor: "#E0F2FE",
+        alignItems: "center",
+        justifyContent: "center",
+        marginRight: 12,
+    },
+    bannerTextWrapper: {
+        flex: 1,
+    },
+    bannerTitle: {
+        fontSize: 15,
+        fontWeight: "700",
+        color: COLORS.textMain,
+    },
+    bannerSubtitle: {
+        fontSize: 12,
+        color: COLORS.textSecondary,
+        marginTop: 2,
+        lineHeight: 16,
+    },
+    formCard: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: 18,
+        padding: 20,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        ...SHADOWS.sm,
+    },
+    fieldLabel: {
+        fontSize: 13,
+        fontWeight: "700",
+        color: COLORS.textMain,
+        marginBottom: 8,
+    },
+    inputWrapper: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#F8FAFC",
+        borderWidth: 1.5,
+        borderColor: COLORS.border,
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        height: 50,
+        marginBottom: 20,
+    },
+    inputIcon: {
+        marginRight: 8,
+    },
+    textInput: {
+        flex: 1,
+        fontSize: 15,
+        color: COLORS.textMain,
+        paddingVertical: 0,
+    },
+    submitButton: {
+        backgroundColor: COLORS.primary,
+        height: 50,
+        borderRadius: 12,
+        alignItems: "center",
+        justifyContent: "center",
+        ...SHADOWS.sm,
+    },
+    submitButtonDisabled: {
+        opacity: 0.7,
+    },
+    buttonInner: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    buttonIcon: {
+        marginRight: 6,
+    },
+    submitButtonText: {
+        color: "#FFFFFF",
+        fontSize: 15,
+        fontWeight: "700",
+        letterSpacing: 0.2,
+    },
+});

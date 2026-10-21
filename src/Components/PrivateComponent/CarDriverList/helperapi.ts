@@ -1,4 +1,3 @@
-import axios from "axios";
 import { totalcardriverapi } from "../../../../environment/apimanager";
 import { Get, Put } from "../../../Common/HttpService";
 

@@ -1,4 +1,3 @@
-import axios from "axios";
 import { createTripTypeApi, getTripTypeApi, createPaymentApi, getTripPaymentApi, UpdateTripPaymentApi } from "../../../../environment/apimanager";
 import { Delete, Get, Post, Put } from "../../../Common/HttpService";
 

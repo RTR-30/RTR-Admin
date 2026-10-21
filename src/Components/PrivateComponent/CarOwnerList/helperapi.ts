@@ -1,4 +1,3 @@
-import axios from "axios";
 import { totalcarownerapi } from "../../../../environment/apimanager";
 import { Get, Put } from "../../../Common/HttpService";
 

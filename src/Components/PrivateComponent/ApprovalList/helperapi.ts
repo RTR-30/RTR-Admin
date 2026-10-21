@@ -1,4 +1,4 @@
-import { approvalsubmitend, submitapprovalapi, totalapprovedapi, totalcarownerapi } from "../../../../environment/apimanager";
+import { approvalsubmitend, submitapprovalapi, totalapprovedapi } from "../../../../environment/apimanager";
 import { Get, Patch } from "../../../Common/HttpService";
 
 export const totalapprovalList = (value?: any, limit?: any, page?: any) => {

@@ -27,7 +27,13 @@ import Withdrawal from "../Components/PrivateComponent/Withdraws";
 import AppVersionControl from "../Components/PrivateComponent/AppVersionControl";
 import CarDriverDetails from "../Components/PrivateComponent/CarDriverList/CarDriverDetails";
 import CarOwnerDetails from "../Components/PrivateComponent/CarOwnerList/CarOwnerDetails";
-
+import BlockAndSuspended from "../Components/PrivateComponent/BlockAndSuspended";
+import PartnerLockList from "../Components/PrivateComponent/BlockAndSuspended/PartnerLockList";
+import UserLockList from "../Components/PrivateComponent/BlockAndSuspended/UserLockList";
+import NotAcceptedList from "../Components/PrivateComponent/BookingList/NotAcceptedList";
+import AutoClosingList from "../Components/PrivateComponent/BookingList/AutoClosingList";
+import TermsAndConditions from "../Components/PrivateComponent/TermsAndConditions";
+import ContactUs from "../Components/PrivateComponent/ContactUs";
 const Stack = createNativeStackNavigator();
 
 const NavigationPage = () => {
@@ -62,6 +68,13 @@ const NavigationPage = () => {
                 <Stack.Screen name="AppVersionControl" component={AppVersionControl}/>
                 <Stack.Screen name="CarOwnerDetails" component={CarOwnerDetails}/>
                 <Stack.Screen name="CarDriverDetails" component={CarDriverDetails}/>
+                <Stack.Screen name="BlockAndSuspended" component={BlockAndSuspended}/>
+                <Stack.Screen name="PartnerLockList" component={PartnerLockList}/>
+                <Stack.Screen name="UserLockList" component={UserLockList}/>
+                <Stack.Screen name="NotAcceptedList" component={NotAcceptedList}/>
+                <Stack.Screen name="AutoClosingList" component={AutoClosingList}/>
+                <Stack.Screen name="TermsAndConditions" component={TermsAndConditions}/>
+                <Stack.Screen name="ContactUs" component={ContactUs}/>
             </Stack.Navigator>
         </NavigationContainer>
     );
