@@ -34,6 +34,12 @@ import NotAcceptedList from "../Components/PrivateComponent/BookingList/NotAccep
 import AutoClosingList from "../Components/PrivateComponent/BookingList/AutoClosingList";
 import TermsAndConditions from "../Components/PrivateComponent/TermsAndConditions";
 import ContactUs from "../Components/PrivateComponent/ContactUs";
+import RoleManagement from "../Components/PrivateComponent/RoleManagement";
+import CreateRole from "../Components/PrivateComponent/RoleManagement/CreateRole";
+import RoleList from "../Components/PrivateComponent/RoleManagement/RoleList";
+import AdminManagement from "../Components/PrivateComponent/AdminManagement";
+import CreateAdmin from "../Components/PrivateComponent/AdminManagement/CreateAdmin";
+import AdminList from "../Components/PrivateComponent/AdminManagement/AdminList";
 const Stack = createNativeStackNavigator();
 
 const NavigationPage = () => {
@@ -75,6 +81,12 @@ const NavigationPage = () => {
                 <Stack.Screen name="AutoClosingList" component={AutoClosingList}/>
                 <Stack.Screen name="TermsAndConditions" component={TermsAndConditions}/>
                 <Stack.Screen name="ContactUs" component={ContactUs}/>
+                <Stack.Screen name="RoleManagement" component={RoleManagement}/>
+                <Stack.Screen name="CreateRole" component={CreateRole}/>
+                <Stack.Screen name="RoleList" component={RoleList}/>
+                <Stack.Screen name="AdminManagement" component={AdminManagement}/>
+                <Stack.Screen name="CreateAdmin" component={CreateAdmin}/>
+                <Stack.Screen name="AdminList" component={AdminList}/>
             </Stack.Navigator>
         </NavigationContainer>
     );

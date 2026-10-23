@@ -1,13 +1,20 @@
 // const baseUri = "http://10.0.2.2:8000/";
-const baseUri = "http://10.182.38.206:8000/";
+const baseUri = "http://10.243.255.206:8000/";
 
 const base = "admin/";
 const paymentBase = "payment/";
 const feedbackBase = "feedback/";
 
 export const Auth = {
-    login: `${baseUri}${base}auth/login`
-}
+    login: `${baseUri}${base}auth/login`,
+    admins: `${baseUri}${base}auth/admins`,
+    createAdmin: `${baseUri}${base}auth/create`,
+    reassignRole: (id: number | string) => `${baseUri}${base}auth/admins/${id}/role`,
+};
+
+export const AdminUsersApi = `${baseUri}${base}auth/admins`;
+export const CreateAdminApi = `${baseUri}${base}auth/create`;
+export const ReassignAdminRoleApi = (id: number | string) => `${baseUri}${base}auth/admins/${id}/role`;
 
 export const approvalsubmitend = "/verify";
 
@@ -39,6 +46,7 @@ export const NotAcceptBookingList = `${baseUri}${base}bookings/not-accepted`;
 export const FeedbackApis = `${baseUri}${feedbackBase}tags`;
 
 export const TermsApi = `${baseUri}${base}terms`;
+export const RolesApi = `${baseUri}${base}roles`;
 export const ContentContactUsApi = `${baseUri}content/contact-us`;
 export const AdminContactUsApi = `${baseUri}${base}contact-us`;
 export const ContactUsApi = ContentContactUsApi;
