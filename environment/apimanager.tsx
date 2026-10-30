@@ -1,5 +1,5 @@
 // const baseUri = "http://10.0.2.2:8000/";
-const baseUri = "http://10.243.255.206:8000/";
+const baseUri = "http://10.150.153.206:8000/";
 
 const base = "admin/";
 const paymentBase = "payment/";
@@ -50,3 +50,6 @@ export const RolesApi = `${baseUri}${base}roles`;
 export const ContentContactUsApi = `${baseUri}content/contact-us`;
 export const AdminContactUsApi = `${baseUri}${base}contact-us`;
 export const ContactUsApi = ContentContactUsApi;
+
+export const FestivalCampaignsApi = `${baseUri}${base}campaigns`;
+

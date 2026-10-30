@@ -40,6 +40,7 @@ import RoleList from "../Components/PrivateComponent/RoleManagement/RoleList";
 import AdminManagement from "../Components/PrivateComponent/AdminManagement";
 import CreateAdmin from "../Components/PrivateComponent/AdminManagement/CreateAdmin";
 import AdminList from "../Components/PrivateComponent/AdminManagement/AdminList";
+import FestivalCampaigns from "../Components/PrivateComponent/FestivalCampaigns";
 const Stack = createNativeStackNavigator();
 
 const NavigationPage = () => {
@@ -87,6 +88,7 @@ const NavigationPage = () => {
                 <Stack.Screen name="AdminManagement" component={AdminManagement}/>
                 <Stack.Screen name="CreateAdmin" component={CreateAdmin}/>
                 <Stack.Screen name="AdminList" component={AdminList}/>
+                <Stack.Screen name="FestivalCampaigns" component={FestivalCampaigns}/>
             </Stack.Navigator>
         </NavigationContainer>
     );

@@ -6,6 +6,7 @@ import {
     ScrollView,
     StyleSheet,
     ActivityIndicator,
+    useWindowDimensions,
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -30,6 +31,11 @@ export interface MenuItem {
 const Dashboard = () => {
     const value = "Home";
     const navigation: any = useNavigation();
+    const { width: screenWidth } = useWindowDimensions();
+
+    const GRID_GAP = 10;
+    const HORIZONTAL_PADDING = 16;
+    const cardWidth = Math.floor((screenWidth - (HORIZONTAL_PADDING * 2) - (GRID_GAP * 2)) / 3);
 
     const [currentUserRole, setCurrentUserRole] = useState<number | string | null>(null);
     const [roleLabel, setRoleLabel] = useState<string>("");
@@ -195,6 +201,16 @@ const Dashboard = () => {
             roleid: [1],
         },
         {
+            title: "Festival Campaigns",
+            category: "Campaigns",
+            icon: "sparkles",
+            iconType: "ion",
+            iconColor: "#D97706",
+            iconBg: "#FEF3C7",
+            onPress: () => navigation.navigate("FestivalCampaigns"),
+            roleid: [1, 2],
+        },
+        {
             title: "Terms & Conditions",
             category: "Legal",
             icon: "document-text",
@@ -269,11 +285,11 @@ const Dashboard = () => {
     const renderIcon = (item: MenuItem) => {
         if (item.iconType === "material") {
             return (
-                <MaterialIcons name={item.icon} size={26} color={item.iconColor} />
+                <MaterialIcons name={item.icon} size={22} color={item.iconColor} />
             );
         }
         return (
-            <Ionicons name={item.icon} size={26} color={item.iconColor} />
+            <Ionicons name={item.icon} size={22} color={item.iconColor} />
         );
     };
 
@@ -329,17 +345,19 @@ const Dashboard = () => {
                                 key={index}
                                 onPress={item.onPress}
                                 activeOpacity={0.75}
-                                style={styles.card}
+                                style={[styles.card, { width: cardWidth }]}
                             >
                                 <View style={styles.cardTopRow}>
                                     <View style={[styles.iconWrapper, { backgroundColor: item.iconBg }]}>
                                         {renderIcon(item)}
                                     </View>
-                                    <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
+                                    <Ionicons name="chevron-forward" size={13} color="#CBD5E1" />
                                 </View>
 
                                 <View style={styles.cardInfo}>
-                                    <Text style={styles.cardCategory}>{item.category.toUpperCase()}</Text>
+                                    <Text style={styles.cardCategory} numberOfLines={1}>
+                                        {item.category.toUpperCase()}
+                                    </Text>
                                     <Text style={styles.cardTitle} numberOfLines={2}>
                                         {item.title}
                                     </Text>
@@ -463,15 +481,14 @@ const styles = StyleSheet.create({
     gridContainer: {
         flexDirection: "row",
         flexWrap: "wrap",
-        justifyContent: "space-between",
+        gap: 10,
     },
     card: {
-        width: "48%",
-        minHeight: 126,
+        minHeight: 114,
         backgroundColor: "#FFFFFF",
-        borderRadius: 16,
-        padding: 14,
-        marginBottom: 14,
+        borderRadius: 14,
+        padding: 10,
+        marginBottom: 4,
         justifyContent: "space-between",
         borderWidth: 1,
         borderColor: COLORS.border,
@@ -483,26 +500,26 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
     },
     iconWrapper: {
-        width: 46,
-        height: 46,
-        borderRadius: 14,
+        width: 38,
+        height: 38,
+        borderRadius: 11,
         alignItems: "center",
         justifyContent: "center",
     },
     cardInfo: {
-        marginTop: 10,
+        marginTop: 8,
     },
     cardCategory: {
-        fontSize: 10,
+        fontSize: 9,
         fontWeight: "700",
         color: COLORS.textMuted,
-        letterSpacing: 0.6,
+        letterSpacing: 0.4,
         marginBottom: 2,
     },
     cardTitle: {
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: "700",
         color: COLORS.textMain,
-        lineHeight: 18,
+        lineHeight: 15,
     },
 });
